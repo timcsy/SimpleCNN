@@ -42,7 +42,7 @@ public:
 	void setOutput(double a) { output = a; }
 	double getOutput() const { return output; }
 	double getGradient() const { return gradient; }
-	double getWeight(int i) const { assert(i<size); return weight[i]; }
+	double getWeight(int i) const { assert(i < size); return weight[i]; }
 	void cal(const vector<Neuron>& prev);
 	void calOutputGradient(const double samp_output);
 	void calHiddenGradient(const vector<Neuron>& next, int j);
@@ -256,12 +256,12 @@ int main() {
 	// w2.push_back(c3);
 	// weight.push_back(w);weight.push_back(w2);
 
-	vector<vector<double> > trainData,testData; 
-	vector<vector<double> > trainY,testY;
+	vector<vector<double> > trainData, testData;
+	vector<vector<double> > trainY, testY;
 	char s[] = "tttrain.txt";
-	read(s,trainData,trainY);
+	read(s, trainData, trainY);
 	char c[] = "ttest.txt";
-	read(c,testData,testY);
+	read(c, testData, testY);
 
 	Net mynet(a);
 	for (int i = 0; i < 20000; ++i){
