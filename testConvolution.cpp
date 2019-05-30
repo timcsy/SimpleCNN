@@ -1,8 +1,19 @@
 #include "Convolution.hpp"
+#include <fstream>
+using namespace std;
 
 void test_kernel() {
 	Kernel k(3, 3);
 	k.print();
+	
+	fstream fout("c_k_output.txt", ios::out);
+	fout << k;
+	fout.close();
+	fstream fin("c_k_output.txt", ios::in);
+	Kernel kk;
+	fin >> kk;
+	fin.close();
+	kk.print();
 }
 
 void test_conv() {
@@ -47,7 +58,7 @@ void test_conv() {
 
 int main() {
 	Kernel::setup(); // must appear just once in main function
-	// test_kernel();
-	test_conv();
+	test_kernel();
+	// test_conv();
 	return 0;
 }
