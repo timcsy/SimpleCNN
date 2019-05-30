@@ -4,14 +4,14 @@ using namespace std;
 class BinaryStream {
 public:
 	double getInt() { return bs.n; }
-	void getInt(ostream& os) { os << bs.n; }
+	void getInt(ostream& os) { os << bs.n; } // read from stream in the readable format
 	void setInt(int n) { clear(); bs.n = n; }
-	void setInt(istream& is) { clear(); is >> bs.n; }
+	void setInt(istream& is) { clear(); is >> bs.n; } // write to stream in the readable format
 	double getDouble() { return bs.r; }
-	void getDouble(ostream& os) { os << bs.r; }
+	void getDouble(ostream& os) { os << bs.r; } // read from stream in the readable format
 	void setDouble(double r) { clear(); bs.r = r; }
-	void setDouble(istream& is) { clear(); is >> bs.r; }
-	void read(istream& is) {
+	void setDouble(istream& is) { clear(); is >> bs.r; } // write to stream in the readable format
+	void read(istream& is) { // read from the original format, in Big-Endian
 		if (isBigEndian()) {
 			is.read(getBuf(), 8);
 		} else {
@@ -20,7 +20,7 @@ public:
 			}
 		}
 	}
-	void write(ostream& os) {
+	void write(ostream& os) { // store in the original format, in Big-Endian
 		if (isBigEndian()) {
 			os.write(getBuf(), 8);
 		} else {
