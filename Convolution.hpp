@@ -44,6 +44,7 @@ public:
 	Convolution(Layers map, Layers kernels, int strides = 1, int padding = 0):
 		input_map(map), strides(strides), padding(padding) {}
 	Convolution(Layers map, int kn, int kh = 4, int kw = 4, int strides = 1, int padding = 0);
+	vector<Kernel> getKernels() { return kernels; }
 	Layers conv(bool relu = true);
 	Layers max_pooling(int m, int n);
 	vector<double> flatten();
