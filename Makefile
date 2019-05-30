@@ -5,4 +5,4 @@ testC: testConvolution.cpp Convolution.hpp
 bo: bo.cpp
 	g++ -o bo bo.cpp
 clean: 
-	rm -rf NN bo *.o
+	rm -rf NN bo testC *.o
