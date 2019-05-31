@@ -42,4 +42,4 @@ runtest:
 
 clean:
 	@echo " Cleaning...";
-	@echo " $(RM) -r $(BUILDDIR) $(TARGET) $(TEST) $(TMP)/*"; $(RM) -r $(BUILDDIR) $(TARGET) $(TEST) $(TMP)/*
+	@echo " $(RM) -r $(BUILDDIR) $(TARGET) $(TEST)"; $(RM) -r $(BUILDDIR) $(TARGET) $(TEST)

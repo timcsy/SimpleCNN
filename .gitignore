@@ -1,9 +1,11 @@
 # Ignore the build and lib dirs
 build
 lib/*
+!lib/.gitkeep
 
 # Ignore any executables
 bin/*
+!bin/.gitkeep
 
 # Ignore Mac specific files
 .DS_Store
@@ -13,3 +15,4 @@ bin/*
 
 # Ignore the testing tmp files
 test/data/tmp/*
+!test/data/tmp/.gitkeep
