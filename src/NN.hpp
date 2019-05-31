@@ -4,25 +4,25 @@
 #include "Neuron.hpp"
 using namespace std;
 
-#define Epsilon 1e-4
+#define Epsilon 1e-3
 
-class Net {
+class NN {
 public:
-	Net(const vector<int>& arr);
-	Net(const vector<int>& arr, const vector<vector<vector<double> > >& w);
+	NN(const vector<int>& arr);
+	NN(const vector<int>& arr, const vector<vector<vector<double> > >& w);
 	void forward(const vector<double>& input);
 	void backProp(const vector<double>& samp_output);
 	void getResult(const vector<double>& input, vector<double>& ans);
 	double calStandardError(){
 		double error = 0;
 		double count = 0;
-		for(int i=1;i<net.size();++i){
-			for(int j=0;j<net[i].size()-1;++j){
+		for (int i = 1; i < net.size(); ++i) {
+			for (int j = 0; j < net[i].size() - 1; ++j) {
 				count += net[i-1].size();
 				error += net[i][j].calSquareError();
 			}
 		}
-		return sqrt(error/count);
+		return sqrt(error / count);
 	}
 	void print() {
 		for (int i = 0; i < net.size(); ++i)
@@ -34,7 +34,7 @@ private:
 
 };
 
-Net::Net(const vector<int>& arr) {
+NN::NN(const vector<int>& arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		vector<Neuron> a;
 		for (int j = 0; j <= arr[i]; ++j) { // include bias
@@ -49,7 +49,8 @@ Net::Net(const vector<int>& arr) {
 		net.push_back(a);
 	}
 }
-Net::Net(const vector<int>& arr, const vector<vector<vector<double> > >& w) {
+
+NN::NN(const vector<int>& arr, const vector<vector<vector<double> > >& w) {
 	for (int i = 0; i < arr.size(); ++i) {
 		vector<Neuron> a;
 		for (int j = 0; j < arr[i]; ++j) { // include bias
@@ -72,7 +73,8 @@ Net::Net(const vector<int>& arr, const vector<vector<vector<double> > >& w) {
 		net.push_back(a);
 	}
 }
-void Net::forward(const vector<double>& input) {
+
+void NN::forward(const vector<double>& input) {
 	assert(input.size() == net[0].size() - 1);
 	// assign input value
 	for (int i = 0; i < input.size(); ++i)
@@ -91,7 +93,8 @@ void Net::forward(const vector<double>& input) {
 		net[i][net[i].size()-1].setOutput(1); //set bias
 	}
 }
-void Net::backProp(const vector<double>& samp_output) {
+
+void NN::backProp(const vector<double>& samp_output) {
 	vector<Neuron> &last = net[net.size()-1];
 	assert(samp_output.size() == last.size() - 1);
 
@@ -135,7 +138,8 @@ void Net::backProp(const vector<double>& samp_output) {
 		}
 	}
 }
-void Net::getResult(const vector<double>& input, vector<double>& ans) {
+
+void NN::getResult(const vector<double>& input, vector<double>& ans) {
 	forward(input);
 	int j = net.size() - 1;
 	ans.clear();
@@ -143,6 +147,7 @@ void Net::getResult(const vector<double>& input, vector<double>& ans) {
 		ans.push_back(net[j][i].getOutput());
 	}
 }
+
 void read(char * filename, vector<vector<double> >& data, vector<vector<double> >& y) {
 	FILE *f;
 	if ((f = fopen(filename, "r")) != NULL){
@@ -164,8 +169,9 @@ void read(char * filename, vector<vector<double> >& data, vector<vector<double> 
 		}
 	}
 }
+
 void print(vector<double> a) {
-	for (int i = 0; i <a.size(); ++i)
+	for (int i = 0; i < a.size(); ++i)
 		cout << a[i] << " ";
 	cout << endl;
 }

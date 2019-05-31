@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
+#include <cassert>
 using namespace std;
 
 #define learning_rate 0.5
@@ -87,6 +88,7 @@ void Neuron::cal(const vector<Neuron>& prev) {
 	printf("output = %lf\n", output);
 	#endif	
 }
+
 void Neuron::calOutputGradient(const double samp_output) {
 	gradient = (samp_output - output) * output * (1 - output);
 }
