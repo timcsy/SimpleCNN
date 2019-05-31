@@ -59,7 +59,7 @@ NN::NN(const vector<int>& arr, const vector<vector<vector<double> > >& w) {
 				Neuron b(0);
 				a.push_back(b);
 			} else {
-				Neuron b(arr[i-1], w[i-1][j]);
+				Neuron b(w[i-1][j]);
 				a.push_back(b);
 			}
 		}

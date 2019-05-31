@@ -30,8 +30,8 @@ public:
 		cout << weight[size - 1] << endl;
 		#endif	
 	}
-	Neuron(const int a, const vector<double>& w): size(a + 1) {
-		for (int i = 0; i <= a; ++i) {
+	Neuron(const vector<double>& w): size(w.size()) {
+		for (int i = 0; i < w.size(); ++i) {
 			weight.push_back(w[i]);
 			delta_weight.push_back(w[i]);
 			#ifdef DEBUG
@@ -52,15 +52,15 @@ public:
 	void update(const vector<Neuron>& prev);
 	double calSquareError(){
 		double error = 0;
-		for(int i=0;i<weight.size();++i){
+		for ( int i = 0; i < weight.size(); ++i) {
 			double a = weight[i] - delta_weight[i];
-			error += a*a;
+			error += a * a;
 			delta_weight[i] = weight[i];
 		}
 		return error;
 	}
 	void printWeight(){
-		cout<<"weight is ";
+		cout << "weight is ";
 		for (int i = 0; i < weight.size(); ++i)
 			cout << weight[i] << " ";
 		cout << endl;

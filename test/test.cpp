@@ -160,11 +160,11 @@ void test_nn() {
 
 int main() {
 	Kernel::setup(); // must appear just once in main function
-	// test_kernel();
+	test_kernel();
 	// test_conv();
 	// test_bs_1();
 	// test_bs_2();
 	// test_bs_endian();
-	test_nn();
+	// test_nn();
 	return 0;
 }
