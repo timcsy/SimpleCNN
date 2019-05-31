@@ -6,7 +6,7 @@
 using namespace std;
 
 #define learning_rate 0.5
-
+#define Epsilon 0.000001
 double sigmoid(double a) {
 	return (1 / (1 + exp(-a)));
 }
@@ -30,7 +30,7 @@ public:
 	Neuron(const int a, const vector<double>& w): size(a + 1) {
 		for (int i = 0; i <= a; ++i) {
 			weight.push_back(w[i]);
-			delta_weight.push_back(0);
+			delta_weight.push_back(w[i]);
 			#ifdef DEBUG
 			cout << weight[i] << " ";
 			#endif	
@@ -47,6 +47,15 @@ public:
 	void calOutputGradient(const double samp_output);
 	void calHiddenGradient(const vector<Neuron>& next, int j);
 	void update(const vector<Neuron>& prev);
+	double calSquareError(){
+		double error = 0;
+		for(int i=0;i<weight.size();++i){
+			double a = weight[i] - delta_weight[i];
+			error += a*a;
+			delta_weight[i] = weight[i];
+		}
+		return error;
+	}
 	void printWeight(){
 		cout<<"weight is ";
 		for (int i = 0; i < weight.size(); ++i)
@@ -68,6 +77,17 @@ public:
 	void forward(const vector<double>& input);
 	void backProp(const vector<double>& samp_output);
 	void getResult(const vector<double>& input, vector<double>& ans);
+	double calStandardError(){
+		double error = 0;
+		double count = 0;
+		for(int i=1;i<net.size();++i){
+			for(int j=0;j<net[i].size()-1;++j){
+				count += net[i-1].size();
+				error += net[i][j].calSquareError();
+			}
+		}
+		return sqrt(error/count);
+	}
 	void print() {
 		for (int i = 0; i < net.size(); ++i)
 			for (int j = 0; j < net[i].size(); ++j)
@@ -75,6 +95,7 @@ public:
 	}
 private:
 	vector<vector<Neuron> > net;
+
 };
 
 void Neuron::cal(const vector<Neuron>& prev) {
@@ -248,14 +269,21 @@ void print(vector<double> a) {
 }
 
 int main() {
-	vector<int> a {20, 10, 1};
-	// vector<double> b{1,1},c1{1,1,1.2},c2{1,1,-0.3},c3{0.4,0.8,-0.5};
-	// vector<double> y{0};
-	vector<vector<vector<double> > > weight;
-	// vector<vector<double>> w,w2;w.push_back(c1);w.push_back(c2);
-	// w2.push_back(c3);
+	//simple test
+	// vector<double> b{0.15,0.2,0.35},b1{0.25,0.3,0.35},c{0.4,0.45,0.6},c1{0.5,0.55,0.6};
+	// vector<vector<vector<double> > > weight;
+	// vector<vector<double>> w,w2;w.push_back(b);w.push_back(b1);
+	// w2.push_back(c);w2.push_back(c1);
 	// weight.push_back(w);weight.push_back(w2);
+	// vector<int> a{2,2,2};
+	// Net mynet(a,weight);
+	// vector<double> input{0.05,0.1},outtput{0.01,0.99};
+	// mynet.forward(input);
+	// mynet.backProp(outtput);
+	// cout<<mynet.calStandardError()<<endl;
+	
 
+	vector<int> a {20, 10, 1};
 	vector<vector<double> > trainData, testData;
 	vector<vector<double> > trainY, testY;
 	char s[] = "tttrain.txt";
@@ -264,10 +292,27 @@ int main() {
 	read(c, testData, testY);
 
 	Net mynet(a);
-	for (int i = 0; i < 20000; ++i){
-		mynet.forward(trainData[i%trainData.size()]);
-		mynet.backProp(trainY[i%trainY.size()]);
+
+	int count = 0;
+	double min = 100;
+	while(1){
+		mynet.forward(trainData[count]);
+		mynet.backProp(trainY[count]);
+		count++;
+		if(count % trainData.size() == 0){
+			double now = mynet.calStandardError();
+			if(now < min){
+				min = now;
+				cout<<"min = "<<now<<endl;
+			}
+			if( now <= Epsilon){
+				break;
+			}
+			count %= trainData.size();
+			cout<<now<<"\n";
+		}
 	}
+	
 	double ans = 0;
 	for (int i = 0; i < testData.size(); ++i) {
 		vector<double> a;
@@ -283,8 +328,13 @@ int main() {
 	}
 	mynet.print();
 	cout << ans / testData.size();
+
+
 	// vector<double> Ans;
 	// mynet.getResult(b,Ans);
 	// for(int i = 0;i<Ans.size();++i)
 	// 	cout<<Ans[i]<<" ";
+
+	
+
 }
