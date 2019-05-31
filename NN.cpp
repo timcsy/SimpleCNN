@@ -6,7 +6,7 @@
 using namespace std;
 
 #define learning_rate 0.5
-#define Epsilon 0.000001
+#define Epsilon 1e-4
 double sigmoid(double a) {
 	return (1 / (1 + exp(-a)));
 }
@@ -283,7 +283,7 @@ int main() {
 	// cout<<mynet.calStandardError()<<endl;
 	
 
-	vector<int> a {20, 10, 1};
+	vector<int> a {20, 1, 1};
 	vector<vector<double> > trainData, testData;
 	vector<vector<double> > trainY, testY;
 	char s[] = "tttrain.txt";
@@ -303,7 +303,7 @@ int main() {
 			double now = mynet.calStandardError();
 			if(now < min){
 				min = now;
-				cout<<"min = "<<now<<endl;
+				// cout<<"min = "<<now<<endl;
 			}
 			if( now <= Epsilon){
 				break;
