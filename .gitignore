@@ -1,5 +1,15 @@
-.vscode
+# Ignore the build and lib dirs
+build
+lib/*
+
+# Ignore any executables
+bin/*
+
+# Ignore Mac specific files
 .DS_Store
-NN
-testBS
-testC
+
+# Ignore the VSCode files
+.vscode
+
+# Ignore the testing tmp files
+test/data/tmp/*

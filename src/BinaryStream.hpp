@@ -1,3 +1,6 @@
+#ifndef BINARY_STREAM_H
+#define BINARY_STREAM_H
+
 #include <iostream>
 using namespace std;
 
@@ -62,3 +65,5 @@ private:
 		for (int i = 0; i < 8; i++) bs.s[i] = 0;
 	}
 };
+
+#endif
