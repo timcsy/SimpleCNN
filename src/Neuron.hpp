@@ -1,18 +1,14 @@
 #ifndef NEURON_H
 #define NEURON_H
 
+#include "util.hpp"
 #include <cstdio>
 #include <vector>
 #include <iostream>
-#include <cmath>
 #include <cassert>
 using namespace std;
 
 #define learning_rate 0.5
-
-double sigmoid(double a) {
-	return (1 / (1 + exp(-a)));
-}
 
 class Neuron {
 public:
