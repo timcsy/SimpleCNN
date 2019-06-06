@@ -2,14 +2,15 @@
 #define NN_H
 
 #include "Neuron.hpp"
+#include "util.hpp"
 using namespace std;
 
-#define Epsilon 1e-3
+#define Epsilon 5e-4
 
 class NN {
 public:
-	NN(const vector<int>& arr);
-	NN(const vector<int>& arr, const vector<vector<vector<double> > >& w);
+	NN(const vector<int> shape);
+	NN(const vector<int> shape, Layers weights);
 	void forward(const vector<double>& input);
 	void backProp(const vector<double>& samp_output);
 	void getResult(const vector<double>& input, vector<double>& ans);
@@ -27,55 +28,45 @@ public:
 	void print() {
 		for (int i = 0; i < net.size(); ++i)
 			for (int j = 0; j < net[i].size(); ++j)
-				net[i][j].printWeight();
+				net[i][j].print();
 	}
 private:
 	vector<vector<Neuron> > net;
-
 };
 
-NN::NN(const vector<int>& arr) {
-	for (int i = 0; i < arr.size(); ++i) {
-		vector<Neuron> a;
-		for (int j = 0; j <= arr[i]; ++j) { // include bias
-			if (i == 0) {
-				Neuron b(0);
-				a.push_back(b);
-			} else {
-				Neuron b(arr[i-1]);
-				a.push_back(b);
-			}
-		}
-		net.push_back(a);
+NN::NN(const vector<int> shape) {
+	// input layer
+	vector<Neuron> layer;
+	for (int j = 0; j <= shape[0]; ++j)
+		layer.push_back(Neuron(0));
+	net.push_back(layer);
+	// hidden and output layer
+	for (int i = 1; i < shape.size(); ++i) {
+		vector<Neuron> layer;
+		for (int j = 0; j <= shape[i]; ++j)
+			layer.push_back(Neuron(shape[i-1])); // number of prev layer neurons
+		net.push_back(layer);
 	}
 }
 
-NN::NN(const vector<int>& arr, const vector<vector<vector<double> > >& w) {
-	for (int i = 0; i < arr.size(); ++i) {
-		vector<Neuron> a;
-		for (int j = 0; j < arr[i]; ++j) { // include bias
-			// cout<<"i = "<<i<<endl;
-			if (i == 0) {
-				Neuron b(0);
-				a.push_back(b);
-			} else {
-				Neuron b(w[i-1][j]);
-				a.push_back(b);
-			}
-		}
-		if (i == 0) {
-			Neuron b(0);
-			a.push_back(b);
-		} else {
-			Neuron b(arr[i-1]);
-			a.push_back(b);
-		}
-		net.push_back(a);
+NN::NN(const vector<int> shape, Layers weights) {
+	// input layer
+	vector<Neuron> layer;
+	for (int j = 0; j <= shape[0]; ++j) // input + 1 neurons
+		layer.push_back(Neuron(0));
+	net.push_back(layer);
+	// hidden and output layer
+	for (int i = 1; i < shape.size(); ++i) {
+		vector<Neuron> layer;
+		for (int j = 0; j < shape[i]; ++j)
+			layer.push_back(Neuron(weights[i-1][j]));
+		layer.push_back(Neuron(shape[i-1])); // include bias
+		net.push_back(layer);
 	}
 }
 
 void NN::forward(const vector<double>& input) {
-	assert(input.size() == net[0].size() - 1);
+	if (input.size() != net[0].size() - 1) throw "NN size error";
 	// assign input value
 	for (int i = 0; i < input.size(); ++i)
 		net[0][i].setOutput(input[i]);
@@ -96,7 +87,7 @@ void NN::forward(const vector<double>& input) {
 
 void NN::backProp(const vector<double>& samp_output) {
 	vector<Neuron> &last = net[net.size()-1];
-	assert(samp_output.size() == last.size() - 1);
+	if (samp_output.size() != last.size() - 1) throw "NN size error";
 
 	// calculate error
 	double error = 0;

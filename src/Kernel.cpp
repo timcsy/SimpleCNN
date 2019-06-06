@@ -13,6 +13,7 @@ Kernel::Kernel(int height, int width) {
 }
 
 ostream& operator<<(ostream& os, const Kernel& k) {
+	// { int height, int width, double map[height][width] }
 	BinaryStream bs;
 	// write obj to stream
 	// alias
@@ -28,6 +29,7 @@ ostream& operator<<(ostream& os, const Kernel& k) {
 }
 
 istream& operator>>(istream& is, Kernel& k) {
+	// { int height, int width, double map[height][width] }
 	BinaryStream bs;
 	// read obj from stream
 	int height = bs.readInt(is);

@@ -90,21 +90,67 @@ void test_bs_endian() {
 	cout << "Big-Endian = " << BinaryStream::isBigEndian() << endl;
 }
 
-void test_nn() {
-	//simple test
-	// vector<double> b{0.15,0.2,0.35},b1{0.25,0.3,0.35},c{0.4,0.45,0.6},c1{0.5,0.55,0.6};
-	// vector<vector<vector<double> > > weight;
-	// vector<vector<double>> w,w2;w.push_back(b);w.push_back(b1);
-	// w2.push_back(c);w2.push_back(c1);
-	// weight.push_back(w);weight.push_back(w2);
-	// vector<int> a{2,2,2};
-	// Net mynet(a,weight);
-	// vector<double> input{0.05,0.1},outtput{0.01,0.99};
-	// mynet.forward(input);
-	// mynet.backProp(outtput);
-	// cout<<mynet.calStandardError()<<endl;
+void test_neuron_1() {
+	Neuron n_out(10, 0.1);
+	n_out.print();
 	
+	fstream fout("test/data/tmp/test_neuron_1_output.txt", ios::out);
+	fout << n_out;
+	fout.close();
+	fstream fin("test/data/tmp/test_neuron_1_output.txt", ios::in);
+	Neuron n_in;
+	fin >> n_in;
+	fin.close();
 
+	n_in.print();
+}
+
+void test_neuron_2() {
+	Neuron n_out({2, 3, 4, 5, 6}, 0.8);
+	n_out.print();
+	
+	fstream fout("test/data/tmp/test_neuron_2_output.txt", ios::out);
+	fout << n_out;
+	fout.close();
+	fstream fin("test/data/tmp/test_neuron_2_output.txt", ios::in);
+	Neuron n_in;
+	fin >> n_in;
+	fin.close();
+
+	n_in.print();
+}
+
+void test_nn_1() {
+	// simple test
+	vector<double> b({0.15, 0.2, 0.35}), b1({0.25, 0.3, 0.35}), c({0.4, 0.45, 0.6}), c1({0.5, 0.55, 0.6});
+	Layers weights;
+	vector<vector<double> > w, w2;
+	w.push_back(b); w.push_back(b1);
+	w2.push_back(c); w2.push_back(c1);
+	weights.push_back(w); weights.push_back(w2);
+	vector<int> a({2, 2, 2});
+	NN nn(a, weights);
+	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
+	nn.forward(input);
+	nn.backProp(output);
+	cout << nn.calStandardError() << endl;
+}
+
+void test_nn_2() {
+	// test weights
+	Layers weights = {
+		{ {0.15, 0.2, 0.35}, {0.25, 0.3, 0.35} },
+		{ {0.4, 0.45, 0.6}, {0.5, 0.55, 0.6} }
+	};
+	vector<int> a({2, 2, 2});
+	NN nn(a, weights);
+	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
+	nn.forward(input);
+	nn.backProp(output);
+	cout << nn.calStandardError() << endl;
+}
+
+void test_nn_3() {
 	vector<int> a {20, 1, 1};
 	vector<vector<double> > trainData, testData;
 	vector<vector<double> > trainY, testY;
@@ -161,10 +207,14 @@ void test_nn() {
 int main() {
 	Kernel::setup(); // must appear just once in main function
 	// test_kernel();
-	test_conv();
+	// test_conv();
 	// test_bs_1();
 	// test_bs_2();
 	// test_bs_endian();
-	// test_nn();
+	// test_neuron_1();
+	// test_neuron_2();
+	// test_nn_1();
+	test_nn_2();
+	// test_nn_3();
 	return 0;
 }

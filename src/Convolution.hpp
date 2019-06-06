@@ -2,9 +2,8 @@
 #define CONVOLUTION_H
 
 #include "Kernel.hpp"
+#include "util.hpp"
 using namespace std;
-
-typedef vector<vector<vector<double> > > Layers;
 
 class Convolution {
 public:
