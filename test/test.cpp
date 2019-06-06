@@ -6,6 +6,8 @@
 #include <iomanip>
 using namespace std;
 
+#define eps 5e-4
+
 void test_kernel() {
 	Kernel k(3, 3);
 	k.print();
@@ -173,7 +175,7 @@ void test_nn_3() {
 				min = now;
 				// cout<<"min = "<<now<<endl;
 			}
-			if( now <= Epsilon){
+			if( now <= eps){
 				break;
 			}
 			count %= trainData.size();
@@ -214,7 +216,7 @@ int main() {
 	// test_neuron_1();
 	// test_neuron_2();
 	// test_nn_1();
-	test_nn_2();
-	// test_nn_3();
+	// test_nn_2();
+	test_nn_3();
 	return 0;
 }
