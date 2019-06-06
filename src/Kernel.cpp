@@ -1,4 +1,5 @@
 #include "Kernel.hpp"
+#include <cstdlib>
 
 Kernel::Kernel(int height, int width) {
 	map.resize(height);

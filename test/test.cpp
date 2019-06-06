@@ -2,11 +2,10 @@
 #include "../src/Convolution.hpp"
 #include "../src/BinaryStream.hpp"
 #include "../src/NN.hpp"
+#include "../src/util.hpp"
 #include <fstream>
 #include <iomanip>
 using namespace std;
-
-#define eps 5e-4
 
 void test_kernel() {
 	Kernel k(3, 3);
@@ -130,8 +129,7 @@ void test_nn_1() {
 	w.push_back(b); w.push_back(b1);
 	w2.push_back(c); w2.push_back(c1);
 	weights.push_back(w); weights.push_back(w2);
-	vector<int> a({2, 2, 2});
-	NN nn(a, weights);
+	NN nn(weights, 5e-4);
 	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
 	nn.forward(input);
 	nn.backProp(output);
@@ -144,8 +142,7 @@ void test_nn_2() {
 		{ {0.15, 0.2, 0.35}, {0.25, 0.3, 0.35} },
 		{ {0.4, 0.45, 0.6}, {0.5, 0.55, 0.6} }
 	};
-	vector<int> a({2, 2, 2});
-	NN nn(a, weights);
+	NN nn(weights, 5e-4);
 	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
 	nn.forward(input);
 	nn.backProp(output);
@@ -153,7 +150,8 @@ void test_nn_2() {
 }
 
 void test_nn_3() {
-	vector<int> a {20, 1, 1};
+	try {
+	vector<int> shape {20, 3, 1};
 	vector<vector<double> > trainData, testData;
 	vector<vector<double> > trainY, testY;
 	char s[] = "test/data/tttrain.txt";
@@ -161,53 +159,87 @@ void test_nn_3() {
 	char c[] = "test/data/ttest.txt";
 	read(c, testData, testY);
 
-	NN mynet(a);
+	NN nn(shape, 5e-4);
 
 	int count = 0;
 	double min = 100;
-	while(1){
-		mynet.forward(trainData[count]);
-		mynet.backProp(trainY[count]);
+	while (1) {
+		nn.forward(trainData[count]);
+		nn.backProp(trainY[count]);
 		count++;
-		if(count % trainData.size() == 0){
-			double now = mynet.calStandardError();
-			if(now < min){
+		if(count % trainData.size() == 0) {
+			double now = nn.calStandardError();
+			if(now < min) {
 				min = now;
-				// cout<<"min = "<<now<<endl;
+				// cout << "min = " << now << endl;
 			}
-			if( now <= eps){
-				break;
-			}
+			if(now <= nn.eps) break;
 			count %= trainData.size();
-			cout<<now<<"\n";
+			cout << now << endl;
 		}
 	}
 	
-	double ans = 0;
+	double err_num = 0;
 	for (int i = 0; i < testData.size(); ++i) {
-		vector<double> a;
-		mynet.getResult(testData[i], a);
+		vector<double> a = nn.getResult(testData[i]);
 		double aaa;
-		if (a.at(0) >= 0.5) {
-			aaa = 1;
-		} else
-			aaa = 0;
-
-		if(aaa != testY[i][0])
-			ans++;
+		if (a.at(0) >= 0.5) aaa = 1;
+		else aaa = 0;
+		if (aaa != testY[i][0]) err_num++;
 	}
-	mynet.print();
-	cout << ans / testData.size();
+	nn.print();
+	cout << "Eout = " << err_num / testData.size() << endl;
+
+	} catch (char const* s) {
+		cout << s << endl;
+	}
+}
 
 
-	// vector<double> Ans;
-	// mynet.getResult(b,Ans);
-	// for(int i = 0;i<Ans.size();++i)
-	// 	cout<<Ans[i]<<" ";
+void test_nn_4() {
+	vector<vector<double> > shape {{20}, {3, 0.6}, {2, 0.4}};
+	NN nn(shape, 5e-3);
+
+	vector<Record> train_records = read_csv("test/data/ttest.txt", " ", 20, true);
+	vector<Record> test_records = read_csv("test/data/tttrain.txt", " ", 20, true);
+	vector<vector<double> > train_data = getData(train_records), test_data = getData(test_records);
+	vector<string> train_labels = getLabel(train_records), test_labels = getLabel(test_records);
+	vector<string> all_labels = allLabels(train_labels);
+	vector<vector<double> > trainY = normalize(train_labels, all_labels);
+	vector<vector<double> > testY = normalize(test_labels, all_labels);
+
+	int count = 0;
+	double min = 100;
+	while (1) {
+		nn.forward(train_data[count]);
+		nn.backProp(trainY[count]);
+		count++;
+		if(count % train_data.size() == 0) {
+			double now = nn.calStandardError();
+			if(now < min) {
+				min = now;
+				// cout << "min = " << now << endl;
+			}
+			if(now <= nn.eps) break;
+			count %= train_data.size();
+			cout << now << endl;
+		}
+	}
+	
+	double err_num = 0;
+	for (int i = 0; i < test_data.size(); ++i) {
+		vector<double> a = nn.getResult(test_data[i]);
+		double aaa;
+		if (a[0] >= a[1]) aaa = 1;
+		else aaa = 0;
+		if (aaa != testY[i][0]) err_num++;
+	}
+	nn.print();
+	cout << "Eout = " << err_num / test_data.size() << endl;
 }
 
 int main() {
-	Kernel::setup(); // must appear just once in main function
+	setup(); // must appear just once in main function
 	// test_kernel();
 	// test_conv();
 	// test_bs_1();
@@ -217,6 +249,7 @@ int main() {
 	// test_neuron_2();
 	// test_nn_1();
 	// test_nn_2();
-	test_nn_3();
+	// test_nn_3();
+	test_nn_4();
 	return 0;
 }
