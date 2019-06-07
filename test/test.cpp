@@ -243,7 +243,7 @@ int main() {
 		// test_nn_4();
 
 	} catch (char const* s) {
-		cout << s<< endl;
+		cout << s << endl;
 	}
 	return 0;
 }
