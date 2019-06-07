@@ -3,7 +3,6 @@
 #include "../src/BinaryStream.hpp"
 #include "../src/NN.hpp"
 #include "../src/Records.hpp"
-#include "../src/util.hpp"
 #include <fstream>
 #include <iomanip>
 using namespace std;
@@ -187,12 +186,17 @@ void test_nn_4() {
 	cout << "Eout = " << Eout << endl;
 }
 
+void test_cnn() {
+	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
+	train_data.read_label("test/data/digit-recognizer/label.txt");
+}
+
 int main() {
 	try {
 
 		setup(); // must appear just once in main function
 		// test_kernel();
-		test_conv();
+		// test_conv();
 		// test_bs_1();
 		// test_bs_2();
 		// test_bs_endian();
@@ -200,7 +204,7 @@ int main() {
 		// test_neuron_2();
 		// test_nn_1();
 		// test_nn_2();
-		// test_nn_3();
+		test_nn_3();
 		// test_nn_4();
 
 	} catch (char const * s) {
