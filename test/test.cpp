@@ -2,6 +2,7 @@
 #include "../src/Convolution.hpp"
 #include "../src/BinaryStream.hpp"
 #include "../src/NN.hpp"
+#include "../src/Records.hpp"
 #include "../src/util.hpp"
 #include <fstream>
 #include <iomanip>
@@ -150,106 +151,99 @@ void test_nn_2() {
 }
 
 void test_nn_3() {
-	try {
-	vector<int> shape {20, 3, 1};
-	vector<vector<double> > trainData, testData;
-	vector<vector<double> > trainY, testY;
-	char s[] = "test/data/tttrain.txt";
-	read(s, trainData, trainY);
-	char c[] = "test/data/ttest.txt";
-	read(c, testData, testY);
+	vector<int> shape {20, 3, 2};
+	NN nn(shape, 5e-3, 0.5);
 
-	NN nn(shape, 5e-4);
+	Records train("test/data/tttrain.txt", " ", 20);
+	train.read_label("test/data/ttlabel.txt");
+	Records test("test/data/ttest.txt", " ", 20);
+	test.setLabelMap(train);
 
 	int count = 0;
 	double min = 100;
 	while (1) {
-		nn.forward(trainData[count]);
-		nn.backProp(trainY[count]);
+		nn.forward(train[count].data);
+		nn.backProp(train[count].output);
 		count++;
-		if(count % trainData.size() == 0) {
+		if (count % train.size() == 0) {
 			double now = nn.calStandardError();
 			if(now < min) {
 				min = now;
 				// cout << "min = " << now << endl;
 			}
 			if(now <= nn.eps) break;
-			count %= trainData.size();
+			count %= train.size();
 			cout << now << endl;
 		}
 	}
 	
 	double err_num = 0;
-	for (int i = 0; i < testData.size(); ++i) {
-		vector<double> a = nn.getResult(testData[i]);
-		double aaa;
-		if (a.at(0) >= 0.5) aaa = 1;
-		else aaa = 0;
-		if (aaa != testY[i][0]) err_num++;
+	for (int i = 0; i < test.size(); ++i) {
+		vector<double> a = nn.getResult(test[i].data);
+		int ans = argmax(a);
+		if (ans != test[i].id) err_num++;
 	}
+
 	nn.print();
-	cout << "Eout = " << err_num / testData.size() << endl;
-
-	} catch (char const* s) {
-		cout << s << endl;
-	}
+	cout << "Eout = " << err_num / test.size() << endl;
 }
-
 
 void test_nn_4() {
 	vector<vector<double> > shape {{20}, {3, 0.6}, {2, 0.4}};
 	NN nn(shape, 5e-3);
 
-	vector<Record> train_records = read_csv("test/data/ttest.txt", " ", 20, true);
-	vector<Record> test_records = read_csv("test/data/tttrain.txt", " ", 20, true);
-	vector<vector<double> > train_data = getData(train_records), test_data = getData(test_records);
-	vector<string> train_labels = getLabel(train_records), test_labels = getLabel(test_records);
-	vector<string> all_labels = allLabels(train_labels);
-	vector<vector<double> > trainY = normalize(train_labels, all_labels);
-	vector<vector<double> > testY = normalize(test_labels, all_labels);
+	Records train("test/data/tttrain.txt", " ", 20);
+	train.read_label("test/data/ttlabel.txt");
+	Records test("test/data/ttest.txt", " ", 20);
+	test.setLabelMap(train);
 
 	int count = 0;
 	double min = 100;
 	while (1) {
-		nn.forward(train_data[count]);
-		nn.backProp(trainY[count]);
+		nn.forward(train[count].data);
+		nn.backProp(train[count].output);
 		count++;
-		if(count % train_data.size() == 0) {
+		if (count % train.size() == 0) {
 			double now = nn.calStandardError();
 			if(now < min) {
 				min = now;
 				// cout << "min = " << now << endl;
 			}
 			if(now <= nn.eps) break;
-			count %= train_data.size();
+			count %= train.size();
 			cout << now << endl;
 		}
 	}
 	
 	double err_num = 0;
-	for (int i = 0; i < test_data.size(); ++i) {
-		vector<double> a = nn.getResult(test_data[i]);
-		double aaa;
-		if (a[0] >= a[1]) aaa = 1;
-		else aaa = 0;
-		if (aaa != testY[i][0]) err_num++;
+	for (int i = 0; i < test.size(); ++i) {
+		vector<double> a = nn.getResult(test[i].data);
+		int ans = argmax(a);
+		if (ans != test[i].id) err_num++;
 	}
+
 	nn.print();
-	cout << "Eout = " << err_num / test_data.size() << endl;
+	cout << "Eout = " << err_num / test.size() << endl;
 }
 
 int main() {
-	setup(); // must appear just once in main function
-	// test_kernel();
-	// test_conv();
-	// test_bs_1();
-	// test_bs_2();
-	// test_bs_endian();
-	// test_neuron_1();
-	// test_neuron_2();
-	// test_nn_1();
-	// test_nn_2();
-	// test_nn_3();
-	test_nn_4();
+	try {
+
+		setup(); // must appear just once in main function
+		// test_kernel();
+		// test_conv();
+		// test_bs_1();
+		// test_bs_2();
+		// test_bs_endian();
+		// test_neuron_1();
+		// test_neuron_2();
+		// test_nn_1();
+		// test_nn_2();
+		test_nn_3();
+		// test_nn_4();
+
+	} catch (char const* s) {
+		cout << s<< endl;
+	}
 	return 0;
 }

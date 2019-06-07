@@ -5,7 +5,7 @@
 #include "util.hpp"
 using namespace std;
 
-#define DEFAULT_NN_EPS 5e-4
+#define DEFAULT_NN_EPS 1e-3
 
 class NN {
 public:
