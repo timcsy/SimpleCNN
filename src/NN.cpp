@@ -106,7 +106,7 @@ double NN::train(Records train_data, bool show) {
 	// N == 0: just depend on eps
 	int count = 0;
 	int iteration = 0;
-	double weight_err = calStandardError();
+	double weight_err;
 	while (iteration < N || N == 0) {
 		forward(train_data[count].data);
 		backProp(train_data[count].output);

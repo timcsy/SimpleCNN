@@ -1,14 +1,17 @@
 #include "Convolution.hpp"
 
-Convolution::Convolution(int kn, int kh, int kw, int strides, int padding) {
+Convolution::Convolution(int kn, int kh, int kw, int strides, int padding, bool relu, int ph, int pw) {
 	this->strides = strides;
 	this->padding = padding;
+	this->relu = relu;
+	this->pooling_height = ph;
+	this->pooling_width = pw;
 	for (int i = 0; i < kn; i++) {
 		kernels.push_back(Kernel(kh, kw)); // not checking if they are the same
 	}
 }
 
-Layers Convolution::conv(bool relu) {
+Layers Convolution::conv() {
 	// alias
 	int H = 0, W = 0, KH = 0, KW = 0;
 	if (input_map.size() > 0) {
@@ -50,8 +53,9 @@ Layers Convolution::conv(bool relu) {
 	return conv_map;
 }
 
-Layers Convolution::max_pooling(int m, int n) {
+Layers Convolution::max_pooling() {
 	// alias
+	int m = pooling_height, n = pooling_width;
 	int CH = 0, CW = 0;
 	if (conv_map.size() > 0) {
 		CH = conv_map[0].size();

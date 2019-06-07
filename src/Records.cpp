@@ -96,6 +96,6 @@ void Records::shuffle() {
 Record Records::operator[](int i) const {
 	if (i >= records.size()) throw "Records index out of range";
 	Record rec = records[i];
-	rec.output = label_map[rec.id].output;
+	if (label_map.size() > 0 && rec.id < label_map.size()) rec.output = label_map[rec.id].output;
 	return rec;
 }

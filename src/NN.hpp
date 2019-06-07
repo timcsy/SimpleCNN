@@ -11,6 +11,7 @@ using namespace std;
 
 class NN {
 public:
+	NN();
 	NN(const vector<int> shape, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N, double learning_rate = DEFAULT_LEARNING_RATE);
 	NN(const vector<vector<double> > shape_learning_rate, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N);
 	NN(Layers weights, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N, double learning_rate = DEFAULT_LEARNING_RATE);

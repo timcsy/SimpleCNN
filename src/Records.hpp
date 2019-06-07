@@ -25,15 +25,16 @@ struct LabelMap {
 class Records {
 public:
 	Records();
+	// col == -1: no label
 	Records(const string filename, const string delim, const string label, bool line_trim = true);
-	Records(const string filename, const string delim, int col = 0, bool line_trim = true);
-	vector<Record>& read_csv(const string filename, const string delim, int col = 0, bool line_trim = true);
+	Records(const string filename, const string delim, int col = -1, bool line_trim = true);
+	vector<Record>& read_csv(const string filename, const string delim, int col = -1, bool line_trim = true);
 	vector<Record>& read_csv(const string filename, const string delim, const string label, bool line_trim = true);
 	vector<LabelMap>& read_label(const string filename);
 	vector<LabelMap> getLabelMap() const { return label_map; }
 	void setLabelMap(vector<LabelMap>& lm) { label_map = lm; normalize(); }
 	void setLabelMap(Records& recs) { label_map = recs.getLabelMap(); normalize(); }
-	void normalize();
+	void normalize(); // one-hot encoding
 	void shuffle();
 	int size() { return records.size(); }
 	Record operator[](int i) const;
