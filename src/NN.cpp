@@ -2,7 +2,7 @@
 #include "BinaryStream.hpp"
 using namespace std;
 
-NN::NN(const vector<int> shape, double eps, double learning_rate): eps(eps) {
+NN::NN(const vector<int> shape, double eps, int N, double learning_rate): eps(eps), N(N) {
 	// hidden and output layer, input layer is not used here
 	for (int i = 1; i < shape.size(); ++i) {
 		vector<Neuron> layer;
@@ -12,7 +12,7 @@ NN::NN(const vector<int> shape, double eps, double learning_rate): eps(eps) {
 	}
 }
 
-NN::NN(const vector<vector<double> > shape_learning_rate, double eps): eps(eps) {
+NN::NN(const vector<vector<double> > shape_learning_rate, double eps, int N): eps(eps), N(N) {
 	// hidden and output layer, input layer is not used here
 	for (int i = 1; i < shape_learning_rate.size(); ++i) {
 		vector<Neuron> layer;
@@ -23,7 +23,7 @@ NN::NN(const vector<vector<double> > shape_learning_rate, double eps): eps(eps) 
 	}
 }
 
-NN::NN(Layers weights, double eps, double learning_rate): eps(eps) {
+NN::NN(Layers weights, double eps, int N, double learning_rate): eps(eps), N(N) {
 	// input, hidden and output layer
 	// input layer should only have a bias for each neuron
 	for (int i = 0; i < weights.size(); ++i) {
@@ -101,11 +101,43 @@ double NN::calStandardError() {
 	return sqrt(error / count);
 }
 
+double NN::train(Records train_data, bool show) {
+	// eps == 0: just depend on N
+	// N == 0: just depend on eps
+	int count = 0;
+	int iteration = 0;
+	double weight_err = calStandardError();
+	while (iteration < N || N == 0) {
+		forward(train_data[count].data);
+		backProp(train_data[count].output);
+		count++;
+		if (count % train_data.size() == 0) {
+			weight_err = calStandardError();
+			if (weight_err < eps) break;
+			count %= train_data.size();
+			iteration++;
+			if (show) cout << "iteration = " << iteration << ", error = " << weight_err << endl;
+		}
+	}
+	return weight_err;
+}
+
+double NN::test(Records test_data) {
+	double err_num = 0;
+	for (int i = 0; i < test_data.size(); ++i) {
+		vector<double> res = getResult(test_data[i].data);
+		int ans = argmax(res);
+		if (ans != test_data[i].id) err_num++;
+	}
+	return err_num / test_data.size();
+}
+
 ostream& operator<<(ostream& os, const NN& nn) {
-	// { double eps, int layer_num, { int neuron_num, Neuron[neuron_num] }[layer_num] }
+	// { double eps, int N, int layer_num, { int neuron_num, Neuron[neuron_num] }[layer_num] }
 	BinaryStream bs;
 	// write obj to stream
 	bs.writeDouble(os, nn.eps);
+	bs.writeInt(os, nn.N);
 	bs.writeInt(os, nn.net.size());
 	for (int i = 0; i < nn.net.size(); i++) {
 		bs.writeInt(os, nn.net[i].size());
@@ -116,10 +148,11 @@ ostream& operator<<(ostream& os, const NN& nn) {
 }
 
 istream& operator>>(istream& is, NN& nn) {
-	// { double eps, int layer_num, { int neuron_num, Neuron[neuron_num] }[layer_num] }
+	// { double eps, int N, int layer_num, { int neuron_num, Neuron[neuron_num] }[layer_num] }
 	BinaryStream bs;
 	// read obj from stream
 	nn.eps = bs.readDouble(is);
+	nn.N = bs.readInt(is);
 	int layer_num = bs.readInt(is);
 	for (int i = 0; i < layer_num; i++) {
 		vector<Neuron> layer;
@@ -137,6 +170,7 @@ istream& operator>>(istream& is, NN& nn) {
 void NN::print() {
 	cout << "NN:" << endl;
 	cout << "eps: " << eps << endl;
+	cout << "N: " << N << endl;
 	for (int i = 0; i < net.size(); ++i) {
 		cout << "Layer " << i + 1 << ": " << endl;
 		for (int j = 0; j < net[i].size(); ++j)

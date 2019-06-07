@@ -152,78 +152,36 @@ void test_nn_2() {
 
 void test_nn_3() {
 	vector<int> shape {20, 3, 2};
-	NN nn(shape, 5e-3, 0.5);
+	NN nn(shape, 5e-3, 0, 0.5);
 
-	Records train("test/data/tttrain.txt", " ", 20);
-	train.read_label("test/data/ttlabel.txt");
-	Records test("test/data/ttest.txt", " ", 20);
-	test.setLabelMap(train);
+	Records train_data("test/data/tttrain.txt", " ", 20);
+	train_data.read_label("test/data/ttlabel.txt");
+	Records test_data("test/data/ttest.txt", " ", 20);
+	test_data.setLabelMap(train_data);
 
-	int count = 0;
-	double min = 100;
-	while (1) {
-		nn.forward(train[count].data);
-		nn.backProp(train[count].output);
-		count++;
-		if (count % train.size() == 0) {
-			double now = nn.calStandardError();
-			if(now < min) {
-				min = now;
-				// cout << "min = " << now << endl;
-			}
-			if(now <= nn.eps) break;
-			count %= train.size();
-			cout << now << endl;
-		}
-	}
-	
-	double err_num = 0;
-	for (int i = 0; i < test.size(); ++i) {
-		vector<double> a = nn.getResult(test[i].data);
-		int ans = argmax(a);
-		if (ans != test[i].id) err_num++;
-	}
+	double Ein = nn.train(train_data, true);
+	double Eout = nn.test(test_data);
 
 	nn.print();
-	cout << "Eout = " << err_num / test.size() << endl;
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
 }
 
 void test_nn_4() {
 	vector<vector<double> > shape {{20}, {3, 0.6}, {2, 0.4}};
 	NN nn(shape, 5e-3);
 
-	Records train("test/data/tttrain.txt", " ", 20);
-	train.read_label("test/data/ttlabel.txt");
-	Records test("test/data/ttest.txt", " ", 20);
-	test.setLabelMap(train);
+	Records train_data("test/data/tttrain.txt", " ", 20);
+	train_data.read_label("test/data/ttlabel.txt");
+	Records test_data("test/data/ttest.txt", " ", 20);
+	test_data.setLabelMap(train_data);
 
-	int count = 0;
-	double min = 100;
-	while (1) {
-		nn.forward(train[count].data);
-		nn.backProp(train[count].output);
-		count++;
-		if (count % train.size() == 0) {
-			double now = nn.calStandardError();
-			if(now < min) {
-				min = now;
-				// cout << "min = " << now << endl;
-			}
-			if(now <= nn.eps) break;
-			count %= train.size();
-			cout << now << endl;
-		}
-	}
-	
-	double err_num = 0;
-	for (int i = 0; i < test.size(); ++i) {
-		vector<double> a = nn.getResult(test[i].data);
-		int ans = argmax(a);
-		if (ans != test[i].id) err_num++;
-	}
+	double Ein = nn.train(train_data, true);
+	double Eout = nn.test(test_data);
 
 	nn.print();
-	cout << "Eout = " << err_num / test.size() << endl;
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
 }
 
 int main() {
@@ -242,7 +200,7 @@ int main() {
 		test_nn_3();
 		// test_nn_4();
 
-	} catch (char const* s) {
+	} catch (char const * s) {
 		cout << s << endl;
 	}
 	return 0;
