@@ -1,7 +1,6 @@
 #include "Convolution.hpp"
 
-Convolution::Convolution(Layers map, int kn, int kh, int kw, int strides, int padding) {
-	this->input_map = map;
+Convolution::Convolution(int kn, int kh, int kw, int strides, int padding) {
 	this->strides = strides;
 	this->padding = padding;
 	for (int i = 0; i < kn; i++) {
@@ -101,6 +100,18 @@ vector<double> Convolution::flatten() {
 		}
 	}
 	return output_vector;
+}
+
+void Convolution::print_input() {
+	for (int k = 0; k < input_map.size(); k++) {
+		for (int i = 0; i < input_map[k].size(); i++) {
+			for (int j = 0; j < input_map[k][i].size(); j++) {
+				cout << input_map[k][i][j] << " ";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
 }
 
 void Convolution::print_kernels() {

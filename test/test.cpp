@@ -43,7 +43,10 @@ void test_conv() {
 			{43,44,45,46,47,48,0}
 		}
 	};
-	Convolution convolution(map, 3, 3, 3, 1, 1);
+	Convolution convolution(3, 3, 3, 1, 1);
+
+	cout << "input map:" << endl;
+	convolution.feed(map);
 
 	cout << "kernels:" << endl;
 	convolution.print_kernels();
@@ -189,7 +192,7 @@ int main() {
 
 		setup(); // must appear just once in main function
 		// test_kernel();
-		// test_conv();
+		test_conv();
 		// test_bs_1();
 		// test_bs_2();
 		// test_bs_endian();
@@ -197,7 +200,7 @@ int main() {
 		// test_neuron_2();
 		// test_nn_1();
 		// test_nn_2();
-		test_nn_3();
+		// test_nn_3();
 		// test_nn_4();
 
 	} catch (char const * s) {
