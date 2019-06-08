@@ -12,10 +12,10 @@ void test_kernel() {
 	Kernel k(3, 3);
 	k.print();
 	
-	fstream fout("test/data/tmp/c_k_output.txt", ios::out);
+	fstream fout("tmp/c_k_output.txt", ios::out);
 	fout << k;
 	fout.close();
-	fstream fin("test/data/tmp/c_k_output.txt", ios::in);
+	fstream fin("tmp/c_k_output.txt", ios::in);
 	Kernel kk;
 	fin >> kk;
 	fin.close();
@@ -69,10 +69,10 @@ void test_bs_1() {
 	BinaryStream bs;
 	bs.setDouble(cin);
 	cout << setprecision(100) << bs.getDouble() << endl;
-	fstream fout("test/data/tmp/bs_test1_output.txt", ios::out);
+	fstream fout("tmp/bs_test1_output.txt", ios::out);
 	bs.write(fout);
 	fout.close();
-	fstream fin("test/data/tmp/bs_test1_output.txt", ios::in);
+	fstream fin("tmp/bs_test1_output.txt", ios::in);
 	double rr = bs.readDouble(fin);
 	cout << setprecision(100) << rr << endl;
 }
@@ -83,10 +83,10 @@ void test_bs_2() {
 	double d = n;
 	bs.setDouble(d);
 	cout << setprecision(100) << bs.getDouble() << endl;
-	fstream fout("test/data/tmp/bs_test2_output.txt", ios::out);
+	fstream fout("tmp/bs_test2_output.txt", ios::out);
 	bs.write(fout);
 	fout.close();
-	fstream fin("test/data/tmp/bs_test2_output.txt", ios::in);
+	fstream fin("tmp/bs_test2_output.txt", ios::in);
 	double rr = bs.readDouble(fin);
 	cout << setprecision(100) << rr << endl;
 }
@@ -109,10 +109,10 @@ void test_neuron_1() {
 	Neuron n_out(10, 0.1);
 	n_out.print();
 	
-	fstream fout("test/data/tmp/test_neuron_1_output.txt", ios::out);
+	fstream fout("tmp/test_neuron_1_output.txt", ios::out);
 	fout << n_out;
 	fout.close();
-	fstream fin("test/data/tmp/test_neuron_1_output.txt", ios::in);
+	fstream fin("tmp/test_neuron_1_output.txt", ios::in);
 	Neuron n_in;
 	fin >> n_in;
 	fin.close();
@@ -124,10 +124,10 @@ void test_neuron_2() {
 	Neuron n_out({2, 3, 4, 5, 6}, 0.8);
 	n_out.print();
 	
-	fstream fout("test/data/tmp/test_neuron_2_output.txt", ios::out);
+	fstream fout("tmp/test_neuron_2_output.txt", ios::out);
 	fout << n_out;
 	fout.close();
-	fstream fin("test/data/tmp/test_neuron_2_output.txt", ios::in);
+	fstream fin("tmp/test_neuron_2_output.txt", ios::in);
 	Neuron n_in;
 	fin >> n_in;
 	fin.close();
@@ -198,8 +198,9 @@ void test_nn_4() {
 }
 
 void test_cnn_1() {
+	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
-	train_data.setLabel({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"});
+	train_data.setLabel(labels);
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
 	test_data.setLabelMap(train_data);
 
@@ -216,12 +217,12 @@ void test_cnn_1() {
 		}
 	};
 
-	CNN cnn(config);
+	CNN cnn(config, labels);
 
 	double Ein = cnn.train(train_data, true);
 	double Eout = cnn.test(test_data, true);
 
-	fstream fout("test/data/tmp/test_cnn_1.cnn", ios::out);
+	fstream fout("tmp/test_cnn_1.cnn", ios::out);
 	fout << cnn;
 	fout.close();
 
@@ -244,10 +245,11 @@ void test_cnn_2() {
 			{10, 0.5} // output_layer, learning_rate
 		}
 	};
+	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
-	CNN cnn(config);
+	CNN cnn(config, labels);
 
-	fstream fout("test/data/tmp/test_cnn_2.cnn", ios::out);
+	fstream fout("tmp/test_cnn_2.cnn", ios::out);
 	fout << cnn;
 	fout.close();
 
@@ -260,21 +262,21 @@ void test_cnn_3() {
 	fstream fout;
 
 	CNN cnn;
-	fin.open("test/data/tmp/test_cnn_2.cnn", ios::in);
+	fin.open("tmp/test_cnn_2.cnn", ios::in);
 	fin >> cnn;
 	fin.close();
 
 	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
 	train_data.setLabel({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"});
 
-	fout.open("test/data/tmp/test_cnn_3_train.rec", ios::out);
+	fout.open("tmp/test_cnn_3_train.rec", ios::out);
 	fout << cnn.conv(train_data, true);
 	fout.close();
 
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
 	test_data.setLabelMap(train_data);
 
-	fout.open("test/data/tmp/test_cnn_3_test.rec", ios::out);
+	fout.open("tmp/test_cnn_3_test.rec", ios::out);
 	fout << cnn.conv(test_data, true);
 	fout.close();
 }
@@ -285,7 +287,7 @@ void test_cnn_4() {
 	fstream fin;
 
 	CNN cnn;
-	fin.open("test/data/tmp/test_cnn_2.cnn", ios::in);
+	fin.open("tmp/test_cnn_2.cnn", ios::in);
 	fin >> cnn;
 	fin.close();
 
@@ -298,19 +300,19 @@ void test_cnn_4() {
 	cnn.setNN(config);
 
 	Records flatten_train_data;
-	fin.open("test/data/tmp/test_cnn_3_train.rec", ios::in);
+	fin.open("tmp/test_cnn_3_train.rec", ios::in);
 	fin >> flatten_train_data;
 	fin.close();
 
 	Records flatten_test_data;
-	fin.open("test/data/tmp/test_cnn_3_test.rec", ios::in);
+	fin.open("tmp/test_cnn_3_test.rec", ios::in);
 	fin >> flatten_test_data;
 	fin.close();
 
 	double Ein = cnn.train_nn(flatten_train_data, true);
 	double Eout = cnn.test_nn(flatten_test_data, true);
 
-	fstream fout("test/data/tmp/test_cnn_1.cnn", ios::out);
+	fstream fout("tmp/test_cnn_1.cnn", ios::out);
 	fout << cnn;
 	fout.close();
 
@@ -336,9 +338,9 @@ int main() {
 		// test_nn_3();
 		// test_nn_4();
 		// test_cnn_1();
-		// test_cnn_2();
+		test_cnn_2();
 		// test_cnn_3();
-		test_cnn_4();
+		// test_cnn_4();
 
 	} catch (char const * s) {
 		cout << s << endl;

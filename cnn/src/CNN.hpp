@@ -7,11 +7,11 @@
 class CNN {
 public:
 	CNN() {}
-	CNN(Layers config);
+	CNN(Layers config, vector<string> labels);
 	void setConvolution(Config config);
 	void setNN(Config config);
 	vector<double> feed_conv(Layers& input);
-	vector<double> getResult(Layers& input);
+	string getResult(vector<double> input);
 	Records conv(Records& train_data, bool show = false);
 	double train_nn(Records& train_data, bool show = false);
 	double train(Records& train_data, bool show = false);
@@ -22,6 +22,7 @@ public:
 	void print();
 private:
 	vector<Convolution> conv_layers;
+	vector<string> labels;
 	NN nn;
 	int map_height;
 	int map_width;

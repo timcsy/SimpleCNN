@@ -1,9 +1,9 @@
 #include "CNN.hpp"
 using namespace std;
 
-CNN::CNN(Layers config) {
+CNN::CNN(Layers config, vector<string> labels): labels(labels) {
 	setConvolution(config[0]);
-	setConvolution(config[1]);
+	setNN(config[1]);
 }
 
 void CNN::setConvolution(Config config) {
@@ -12,6 +12,7 @@ void CNN::setConvolution(Config config) {
 	map_width = (config[0].size() > 1)? config[0][1]: 0;
 	map_depth = (config[0].size() > 2)? config[0][2]: 1;
 	// convolution Layers
+	conv_layers.clear();
 	for (int l = 1; l < config.size(); l++) {
 		int kernel_num = (config[l].size() > 0)? config[l][0]: 0;
 		int kernek_height = (config[l].size() > 1)? config[l][1]: 4;
@@ -57,10 +58,6 @@ vector<double> CNN::feed_conv(Layers& input) {
 	return conv_layers[conv_layers.size()-1].flatten();
 }
 
-vector<double> CNN::getResult(Layers& input) {
-	return nn.getResult(feed_conv(input));
-}
-
 Layers reshape(vector<double> v, int height, int width, int depth) {
 	Layers maps;
 	for (int l = 0; l < depth; l++) {
@@ -75,6 +72,13 @@ Layers reshape(vector<double> v, int height, int width, int depth) {
 		maps.push_back(layer);
 	}
 	return maps;
+}
+
+string CNN::getResult(vector<double> input) {
+	Layers data = reshape(input, map_height, map_width, map_depth);
+	vector<double> res = nn.getResult(feed_conv(data));
+	int ans = argmax(res);
+	return labels[ans];
 }
 
 Records CNN::conv(Records& train_data, bool show) {
@@ -123,11 +127,15 @@ ostream& operator<<(ostream& os, const CNN& cnn) {
 		os << cnn.conv_layers[l];
 	}
 	os << cnn.nn;
+	bs.writeInt(os, cnn.labels.size());
+	for (int i = 0; i < cnn.labels.size(); i++) {
+		os << cnn.labels[i] << endl;
+	}
 	return os;
 }
 
 istream& operator>>(istream& is, CNN& cnn) {
-	// { int map_height, int map_width, int map_depth, int layer_size, Convolution[layer_size], nn }
+	// { int map_height, int map_width, int map_depth, int layer_size, Convolution[layer_size], nn, int label_num, string labels }
 	BinaryStream bs;
 	// read obj from stream
 	cnn.map_height = bs.readInt(is);
@@ -140,6 +148,13 @@ istream& operator>>(istream& is, CNN& cnn) {
 		cnn.conv_layers.push_back(c);
 	}
 	is >> cnn.nn;
+	int label_num = bs.readInt(is);
+	cnn.labels.clear();
+	for (int i = 0; i < label_num; i++) {
+		string s;
+		is >> s;
+		cnn.labels.push_back(s);
+	}
 	return is;
 }
 

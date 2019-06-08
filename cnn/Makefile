@@ -1,5 +1,3 @@
-all: cmake make
-
 build: FORCE
 	cd build; make
 cmake: FORCE
@@ -9,5 +7,5 @@ run: FORCE
 test: FORCE
 	@build/bin/test
 clean: 
-	rm -rf build
+	rm -rf build tmp; mkdir tmp; touch tmp/.gitkeep
 FORCE:
