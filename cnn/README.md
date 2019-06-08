@@ -36,12 +36,12 @@ make run
 
 on Windows:
 ```
-build/bin/scnn "tmp/test_cnn_2.cnn" < "data/example_input.txt"
+build\bin\scnn.exe "tmp\test_cnn_2.cnn" < "data\example_input.txt"
 ```
 
 Generally:
 ```
-build/bin/scnn 'tmp/test_cnn_2.cnn' < 'data/example_input.txt'
+build\bin\scnn 'tmp/test_cnn_2.cnn' < 'data/example_input.txt'
 ```
 
 Test
@@ -53,7 +53,7 @@ make test
 
 on Windows:
 ```
-build/bin/test
+build\bin\test.exe
 ```
 
 Generally:

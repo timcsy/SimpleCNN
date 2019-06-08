@@ -292,12 +292,12 @@ void test_cnn_4() {
 	fin.close();
 
 	// We can change the NN part only
-	Config config = {
-		{0, 20}, // eps, N
-		{20, 0.5}, // hidden_layer, learning_rate
-		{10, 0.5} // output_layer, learning_rate
-	};
-	cnn.setNN(config);
+	// Config config = {
+	// 	{0, 20}, // eps, N
+	// 	{20, 0.5}, // hidden_layer, learning_rate
+	// 	{10, 0.5} // output_layer, learning_rate
+	// };
+	// cnn.setNN(config);
 
 	Records flatten_train_data;
 	fin.open("tmp/test_cnn_3_train.rec", ios::in);
@@ -312,7 +312,7 @@ void test_cnn_4() {
 	double Ein = cnn.train_nn(flatten_train_data, true);
 	double Eout = cnn.test_nn(flatten_test_data, true);
 
-	fstream fout("tmp/test_cnn_1.cnn", ios::out);
+	fstream fout("tmp/test_cnn_2.cnn", ios::out);
 	fout << cnn;
 	fout.close();
 

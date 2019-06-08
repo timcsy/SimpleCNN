@@ -163,7 +163,7 @@ istream& operator>>(istream& is, Records& records) {
 		Record rec;
 		for (int j = 0; j < data_size; j++) rec.data.push_back(bs.readDouble(is));
 		rec.id = bs.readInt(is);
-		records.records.push_back(rec);
+		records.push_back(rec);
 	}
 	int label_size = bs.readInt(is);
 	vector<string> labels;
