@@ -11,11 +11,19 @@ make cmake
 make build
 ```
 
+on Windows:
+```
+mkdir build
+cd build
+cmake .. -G 
+make
+```
+
 Generally:
 ```
 mkdir -p build
 cd build
-cmake ..
+cmake -G "MinGW Makefiles" ..
 make
 ```
 
@@ -24,6 +32,11 @@ Run
 on UNIX:
 ```
 make run
+```
+
+on Windows:
+```
+build/bin/scnn "tmp/test_cnn_2.cnn" < "data/example_input.txt"
 ```
 
 Generally:
@@ -36,6 +49,11 @@ Test
 on UNIX:
 ```
 make test
+```
+
+on Windows:
+```
+build/bin/test
 ```
 
 Generally:
