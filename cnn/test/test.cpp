@@ -240,7 +240,7 @@ void test_cnn_2() {
 			{7, 2, 2, 1, 0, 1, 4, 4}
 		},
 		{
-			{0, 100}, // eps, N
+			{0, 20}, // eps, N
 			{20, 0.5}, // hidden_layer, learning_rate
 			{10, 0.5} // output_layer, learning_rate
 		}
@@ -337,10 +337,10 @@ int main() {
 		// test_nn_2();
 		// test_nn_3();
 		// test_nn_4();
-		// test_cnn_1();
+		test_cnn_1();
 		// test_cnn_2();
 		// test_cnn_3();
-		test_cnn_4();
+		// test_cnn_4();
 
 	} catch (char const * s) {
 		cout << s << endl;
