@@ -10,5 +10,5 @@ lib/*
 .vscode
 
 # Ignore the testing tmp files
-test/data/tmp/*
-!test/data/tmp/.gitkeep
+tmp/*
+!tmp/.gitkeep
