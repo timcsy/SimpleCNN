@@ -337,8 +337,8 @@ int main() {
 		// test_nn_2();
 		// test_nn_3();
 		// test_nn_4();
-		test_cnn_1();
-		// test_cnn_2();
+		// test_cnn_1();
+		test_cnn_2();
 		// test_cnn_3();
 		// test_cnn_4();
 
