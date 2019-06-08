@@ -3,7 +3,7 @@ build: FORCE
 cmake: FORCE
 	mkdir -p build; cd build; cmake ..
 run: FORCE
-	@build/bin/scnn
+	@build/bin/scnn 'tmp/test_cnn_2.cnn' < 'data/example_input.txt'
 test: FORCE
 	@build/bin/test
 clean: 

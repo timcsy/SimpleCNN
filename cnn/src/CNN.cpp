@@ -107,7 +107,7 @@ double CNN::train(Records& train_data, bool show) {
 }
 
 double CNN::test_nn(Records& flatten_data, bool show) {
-	return test(flatten_data, show);
+	return nn.test(flatten_data);
 }
 
 double CNN::test(Records& test_data, bool show) {
