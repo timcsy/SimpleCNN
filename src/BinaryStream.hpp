@@ -6,7 +6,7 @@ using namespace std;
 
 class BinaryStream {
 public:
-	double getInt() { return bs.n; } // get int in the union
+	int getInt() { return bs.n; } // get int in the union
 	void getInt(ostream& os) { os << bs.n; } // read from stream in the readable format
 	void setInt(int n) { clear(); bs.n = n; } // set int in the union
 	void setInt(istream& is) { clear(); is >> bs.n; } // write to stream in the readable format

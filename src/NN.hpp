@@ -11,15 +11,16 @@ using namespace std;
 
 class NN {
 public:
-	NN();
+	NN() {}
 	NN(const vector<int> shape, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N, double learning_rate = DEFAULT_LEARNING_RATE);
-	NN(const vector<vector<double> > shape_learning_rate, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N);
+	NN(Config shape_learning_rate, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N);
 	NN(Layers weights, double eps = DEFAULT_NN_EPS, int N = DEFAULT_NN_N, double learning_rate = DEFAULT_LEARNING_RATE);
 	vector<double> getOutput(int layer);
 	void forward(const vector<double>& input);
 	void backProp(const vector<double>& expect_output);
 	vector<double> getResult(const vector<double>& input);
 	double calStandardError();
+	double sample_error(const Records& data);
 	double train(Records train_data, bool show = false);
 	double test(Records test_data);
 	friend ostream& operator<<(ostream& os, const NN& nn);

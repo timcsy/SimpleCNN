@@ -25,12 +25,17 @@ Layers Convolution::conv() {
 	int height = (H + 2 * padding - KH) / strides + 1;
 	int width = (W + 2 * padding - KW) / strides + 1;
 	// initializing convolution map
-	conv_map.resize(kernels.size());
-	for (int k = 0; k < conv_map.size(); k++) {
-		conv_map[k].resize(height);
+	conv_map.clear();
+	for (int k = 0; k < kernels.size(); k++) {
+		vector<vector<double> > layer;
 		for (int i = 0; i < height; i++) {
-			conv_map[k][i].resize(width, 0);
+			vector<double> row;
+			for (int j = 0; j < width; j++) {
+				row.push_back(0);
+			}
+			layer.push_back(row);
 		}
+		conv_map.push_back(layer);
 	}
 	// convolution
 	for (int k = 0; k < kernels.size(); k++) {
@@ -106,6 +111,47 @@ vector<double> Convolution::flatten() {
 	return output_vector;
 }
 
+ostream& operator<<(ostream& os, const Convolution& c) {
+	// { int strides, int padding, int relu, int pooling_height, int pooling_width, int kernel_num, Kernel[kernel_num] }
+	BinaryStream bs;
+	// write obj to stream
+	bs.writeInt(os, c.strides);
+	bs.writeInt(os, c.padding);
+	bs.writeInt(os, c.relu);
+	bs.writeInt(os, c.pooling_height);
+	bs.writeInt(os, c.pooling_width);
+	bs.writeInt(os, c.kernels.size());
+	for (int i = 0; i < c.kernels.size(); i++)
+			os << c.kernels[i];
+	return os;
+}
+
+istream& operator>>(istream& is, Convolution& c) {
+	// { int strides, int padding, int relu, int pooling_height, int pooling_width, int kernel_num, Kernel[kernel_num] }
+	BinaryStream bs;
+	// read obj from stream
+	c.strides = bs.readInt(is);
+	c.padding = bs.readInt(is);
+	c.relu = bs.readInt(is);
+	c.pooling_height = bs.readInt(is);
+	c.pooling_width = bs.readInt(is);
+	int kernel_num = bs.readInt(is);
+	for (int i = 0; i < kernel_num; i++) {
+		Kernel k;
+		is >> k;
+		c.kernels.push_back(k);
+	}
+	return is;
+}
+
+void Convolution::print() {
+	cout << "strides = " << strides << endl;
+	cout << "padding = " << padding << endl;
+	cout << "relu = " << relu << endl;
+	cout << "pooling_height = " << pooling_height << endl;
+	print_kernels();
+}
+
 void Convolution::print_input() {
 	for (int k = 0; k < input_map.size(); k++) {
 		for (int i = 0; i < input_map[k].size(); i++) {
@@ -120,8 +166,8 @@ void Convolution::print_input() {
 
 void Convolution::print_kernels() {
 	for (int k = 0; k < kernels.size(); k++) {
+		cout << "Kernel " << k << ":" << endl;
 		kernels[k].print();
-		cout << endl;
 	}
 }
 

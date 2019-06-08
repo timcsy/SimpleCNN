@@ -24,20 +24,24 @@ struct LabelMap {
 
 class Records {
 public:
-	Records();
+	Records() {}
 	// col == -1: no label
 	Records(const string filename, const string delim, const string label, bool line_trim = true);
 	Records(const string filename, const string delim, int col = -1, bool line_trim = true);
 	vector<Record>& read_csv(const string filename, const string delim, int col = -1, bool line_trim = true);
 	vector<Record>& read_csv(const string filename, const string delim, const string label, bool line_trim = true);
 	vector<LabelMap>& read_label(const string filename);
+	vector<LabelMap>& setLabel(vector<string> labels);
 	vector<LabelMap> getLabelMap() const { return label_map; }
 	void setLabelMap(vector<LabelMap>& lm) { label_map = lm; normalize(); }
 	void setLabelMap(Records& recs) { label_map = recs.getLabelMap(); normalize(); }
 	void normalize(); // one-hot encoding
 	void shuffle();
-	int size() { return records.size(); }
+	int size() const { return records.size(); }
 	Record operator[](int i) const;
+	void push_back(Record rec) { records.push_back(rec); }
+	friend ostream& operator<<(ostream& os, const Records& records);
+	friend istream& operator>>(istream& is, Records& records);
 private:
 	vector<Record>& read_csv(const string filename, const string delim, int col, const string label, int header, bool line_trim);
 	vector<Record> records;

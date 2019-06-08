@@ -84,7 +84,6 @@ void NN::backProp(const vector<double>& expect_output) {
 }
 
 vector<double> NN::getResult(const vector<double>& input) {
-	vector<double> ans;
 	forward(input);
 	return getOutput(net.size() - 1);
 }
@@ -99,6 +98,16 @@ double NN::calStandardError() {
 		}
 	}
 	return sqrt(error / count);
+}
+
+double NN::sample_error(const Records& data) {
+	double err_num = 0;
+	for (int i = 0; i < data.size(); ++i) {
+		vector<double> res = getResult(data[i].data);
+		int ans = argmax(res);
+		if (ans != data[i].id) err_num++;
+	}
+	return err_num / data.size();
 }
 
 double NN::train(Records train_data, bool show) {
@@ -116,20 +125,16 @@ double NN::train(Records train_data, bool show) {
 			if (weight_err < eps) break;
 			count %= train_data.size();
 			iteration++;
-			if (show) cout << "iteration = " << iteration << ", error = " << weight_err << endl;
+			if (show) cout << "iteration = " << iteration << ", weight error = " << weight_err << ", Ein = " << sample_error(train_data) << endl;
+			train_data.shuffle();
 		}
 	}
-	return weight_err;
+
+	return sample_error(train_data);
 }
 
 double NN::test(Records test_data) {
-	double err_num = 0;
-	for (int i = 0; i < test_data.size(); ++i) {
-		vector<double> res = getResult(test_data[i].data);
-		int ans = argmax(res);
-		if (ans != test_data[i].id) err_num++;
-	}
-	return err_num / test_data.size();
+	return sample_error(test_data);
 }
 
 ostream& operator<<(ostream& os, const NN& nn) {

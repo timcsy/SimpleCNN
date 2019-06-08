@@ -168,7 +168,7 @@ void test_nn_3() {
 	NN nn(shape, 5e-3, 0, 0.5);
 
 	Records train_data("test/data/hw4/hw4_train.dat", " ", 2);
-	train_data.read_label("test/data/hw4/hw4_label.txt");
+	train_data.setLabel({"1", "-1"});
 	Records test_data("test/data/hw4/hw4_test.dat", " ", 2);
 	test_data.setLabelMap(train_data);
 
@@ -181,12 +181,12 @@ void test_nn_3() {
 }
 
 void test_nn_4() {
-	vector<vector<double> > shape {{20}, {3, 0.6}, {2, 0.4}};
-	NN nn(shape, 5e-3);
+	vector<vector<double> > shape {{20}, {5, 0.6}, {2, 0.4}};
+	NN nn(shape, 0, 1000);
 
-	Records train_data("test/data/tttrain.txt", " ", 20);
-	train_data.read_label("test/data/ttlabel.txt");
-	Records test_data("test/data/ttest.txt", " ", 20);
+	Records train_data("test/data/nn/tttrain.txt", " ", 20);
+	train_data.setLabel({"1", "-1"});
+	Records test_data("test/data/nn/ttest.txt", " ", 20);
 	test_data.setLabelMap(train_data);
 
 	double Ein = nn.train(train_data, true);
@@ -197,29 +197,122 @@ void test_nn_4() {
 	cout << "Eout = " << Eout << endl;
 }
 
-void test_cnn() {
+void test_cnn_1() {
 	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
-	train_data.read_label("test/data/digit-recognizer/label.txt");
+	train_data.setLabel({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"});
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
 	test_data.setLabelMap(train_data);
 
 	Layers config = {
 		{
 			{28, 28, 1}, // map_height, map_width, map_depth
-			{10, 4, 4, 1, 0, 1, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
-			{7, 4, 4, 1, 0, 1, 2, 2}
+			{7, 4, 4, 1, 0, 1, 4, 4}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
+			{7, 2, 2, 1, 0, 1, 4, 4}
 		},
 		{
-			{5e-4, 0}, // eps, N
-			{3, 0.6}, // hidden_layer, learning_rate
-			{2, 0.4} // output_layer, learning_rate
+			{0, 100}, // eps, N
+			{20, 0.5}, // hidden_layer, learning_rate
+			{10, 0.5} // output_layer, learning_rate
 		}
 	};
 
 	CNN cnn(config);
 
 	double Ein = cnn.train(train_data, true);
-	double Eout = cnn.test(test_data);
+	double Eout = cnn.test(test_data, true);
+
+	fstream fout("test/data/tmp/test_cnn_1.cnn", ios::out);
+	fout << cnn;
+	fout.close();
+
+	cnn.print();
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
+}
+
+void test_cnn_2() {
+	// save CNN model
+	Layers config = {
+		{
+			{28, 28, 1}, // map_height, map_width, map_depth
+			{7, 4, 4, 1, 0, 1, 4, 4}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
+			{7, 2, 2, 1, 0, 1, 4, 4}
+		},
+		{
+			{0, 100}, // eps, N
+			{20, 0.5}, // hidden_layer, learning_rate
+			{10, 0.5} // output_layer, learning_rate
+		}
+	};
+
+	CNN cnn(config);
+
+	fstream fout("test/data/tmp/test_cnn_2.cnn", ios::out);
+	fout << cnn;
+	fout.close();
+
+	cnn.print();
+}
+
+void test_cnn_3() {
+	// save convolutioned records
+	fstream fin;
+	fstream fout;
+
+	CNN cnn;
+	fin.open("test/data/tmp/test_cnn_2.cnn", ios::in);
+	fin >> cnn;
+	fin.close();
+
+	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
+	train_data.setLabel({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"});
+
+	fout.open("test/data/tmp/test_cnn_3_train.rec", ios::out);
+	fout << cnn.conv(train_data, true);
+	fout.close();
+
+	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
+	test_data.setLabelMap(train_data);
+
+	fout.open("test/data/tmp/test_cnn_3_test.rec", ios::out);
+	fout << cnn.conv(test_data, true);
+	fout.close();
+}
+
+
+void test_cnn_4() {
+	// use the saved convolutioned records
+	fstream fin;
+
+	CNN cnn;
+	fin.open("test/data/tmp/test_cnn_2.cnn", ios::in);
+	fin >> cnn;
+	fin.close();
+
+	// We can change the NN part only
+	Config config = {
+		{0, 100}, // eps, N
+		{20, 0.5}, // hidden_layer, learning_rate
+		{10, 0.5} // output_layer, learning_rate
+	};
+	cnn.setNN(config);
+
+	Records flatten_train_data;
+	fin.open("test/data/tmp/test_cnn_3_train.rec", ios::in);
+	fin >> flatten_train_data;
+	fin.close();
+
+	Records flatten_test_data;
+	fin.open("test/data/tmp/test_cnn_3_test.rec", ios::in);
+	fin >> flatten_test_data;
+	fin.close();
+
+	double Ein = cnn.train_nn(flatten_train_data, true);
+	double Eout = cnn.test_nn(flatten_test_data, true);
+
+	fstream fout("test/data/tmp/test_cnn_1.cnn", ios::out);
+	fout << cnn;
+	fout.close();
 
 	cnn.print();
 	cout << "Ein = " << Ein << endl;
@@ -242,7 +335,10 @@ int main() {
 		// test_nn_2();
 		// test_nn_3();
 		// test_nn_4();
-		test_cnn();
+		// test_cnn_1();
+		// test_cnn_2();
+		// test_cnn_3();
+		test_cnn_4();
 
 	} catch (char const * s) {
 		cout << s << endl;

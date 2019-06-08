@@ -8,15 +8,24 @@ class CNN {
 public:
 	CNN() {}
 	CNN(Layers config);
-	vector<double> getResult(const vector<double>& input);
-	double train(Records train_data, bool show = false);
-	double test(Records test_data);
+	void setConvolution(Config config);
+	void setNN(Config config);
+	vector<double> feed_conv(Layers& input);
+	vector<double> getResult(Layers& input);
+	Records conv(Records& train_data, bool show = false);
+	double train_nn(Records& train_data, bool show = false);
+	double train(Records& train_data, bool show = false);
+	double test_nn(Records& test_data, bool show = false);
+	double test(Records& test_data, bool show = false);
 	friend ostream& operator<<(ostream& os, const CNN& cnn);
 	friend istream& operator>>(istream& is, CNN& cnn);
 	void print();
 private:
 	vector<Convolution> conv_layers;
 	NN nn;
+	int map_height;
+	int map_width;
+	int map_depth;
 };
 
 #endif

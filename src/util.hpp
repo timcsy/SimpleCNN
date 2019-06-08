@@ -7,6 +7,7 @@
 using namespace std;
 
 typedef vector<vector<vector<double> > > Layers;
+typedef vector<vector<double> > Config;
 
 void setup(); // put it once in main function for random (MUST DO !!!)
 double sigmoid(double x);

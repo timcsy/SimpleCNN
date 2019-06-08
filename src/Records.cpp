@@ -1,4 +1,5 @@
 #include "Records.hpp"
+#include "BinaryStream.hpp"
 #include "util.hpp"
 #include <algorithm> // std::random_shuffle
 #include <random>       // std::default_random_engine
@@ -63,6 +64,8 @@ vector<LabelMap>& Records::read_label(const string filename) {
 	}
 	fin.close();
 
+	label_map.clear();
+
 	for (int i = 0; i < labels.size(); i++) {
 		LabelMap lm;
 		lm.label = labels[i];
@@ -77,7 +80,37 @@ vector<LabelMap>& Records::read_label(const string filename) {
 	return label_map;
 }
 
-void Records::normalize() {
+vector<LabelMap>& Records::setLabel(vector<string> labels) {
+	vector<string> label_set;
+	
+	for (int i = 0; i < labels.size(); i++) {
+		bool is_found = false;
+		for (int j = 0; j < label_set.size(); j++) {
+			if (labels[i] == label_set[j]) {
+				is_found = true;
+				break;
+			}
+		}
+		if (!is_found) label_set.push_back(labels[i]);
+	}
+
+	label_map.clear();
+
+	for (int i = 0; i < label_set.size(); i++) {
+		LabelMap lm;
+		lm.label = label_set[i];
+		for (int j = 0; j < label_set.size(); j++) {
+			if (i == j) lm.output.push_back(1);
+			else lm.output.push_back(0);
+		}
+		label_map.push_back(lm);
+	}
+
+	normalize();
+	return label_map;
+}
+
+void Records::normalize() { // one-hot encoding
 	for (int i = 0; i < records.size(); i++) {
 		for (int j = 0; j < label_map.size(); j++) {
 			if (records[i].label == label_map[j].label) {
@@ -98,4 +131,51 @@ Record Records::operator[](int i) const {
 	Record rec = records[i];
 	if (label_map.size() > 0 && rec.id < label_map.size()) rec.output = label_map[rec.id].output;
 	return rec;
+}
+
+ostream& operator<<(ostream& os, const Records& records) {
+	// { int size, int data_size, { double data[data_size], int id }[size], label_size, string labels[label_size] }
+	BinaryStream bs;
+	// write obj to stream
+	int size = records.size();
+	bs.writeInt(os, size);
+	int data_size = (size > 0)? records[0].data.size(): 0;
+	bs.writeInt(os, data_size);
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < data_size; j++) bs.writeDouble(os, records[i].data[j]);
+		bs.writeInt(os, records[i].id);
+	}
+	bs.writeInt(os, records.label_map.size());
+	for (int i = 0; i < records.label_map.size(); i++) {
+		os << records.label_map[i].label << endl;
+	}
+	return os;
+}
+
+istream& operator>>(istream& is, Records& records) {
+	// { int size, int data_size, { double data[data_size], int id }[size], label_size, string labels[label_size] }
+	BinaryStream bs;
+	// read obj from stream
+	int size = bs.readInt(is);
+	int data_size = bs.readInt(is);
+	records.records.clear();
+	for (int i = 0; i < size; i++) {
+		Record rec;
+		for (int j = 0; j < data_size; j++) rec.data.push_back(bs.readDouble(is));
+		rec.id = bs.readInt(is);
+		records.records.push_back(rec);
+	}
+	int label_size = bs.readInt(is);
+	vector<string> labels;
+	for (int i = 0; i < label_size; i++) {
+		string s;
+		is >> s;
+		labels.push_back(s);
+	}
+	
+	for (int i = 0; i < records.size(); i++) {
+		records[i].label = labels[records[i].id];
+	}
+	records.setLabel(labels);
+	return is;
 }
