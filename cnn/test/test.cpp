@@ -352,7 +352,7 @@ int main() {
 		// test_cnn_1();
 		test_cnn_2();
 		test_cnn_3();
-		test_cnn_4();
+		// test_cnn_4();
 
 	} catch (char const * s) {
 		cout << s << endl;
