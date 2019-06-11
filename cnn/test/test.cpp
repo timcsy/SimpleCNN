@@ -43,7 +43,7 @@ void test_conv() {
 			{43,44,45,46,47,48,0}
 		}
 	};
-	Convolution convolution(3, 3, 3, 1, 1, true, 2, 2);
+	Convolution convolution(3, 3, 3, 1, 1, false, 2, 2);
 
 	cout << "input map:" << endl;
 	convolution.feed(map);
@@ -236,9 +236,7 @@ void test_cnn_2() {
 	Layers config = {
 		{
 			{28, 28, 1}, // map_height, map_width, map_depth
-			{64, 3, 3, 2, 0, 1, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
-			{128, 3, 3, 1, 0, 1, 2, 2},
-			{256, 3, 3, 1, 0, 1, 2, 2}
+			{1, 1, 1, 1, 0, 0, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
 		},
 		{
 			{0, 100}, // eps, N
@@ -296,12 +294,12 @@ void test_cnn_4() {
 	// We can change the NN part only
 	// We can change the NN part only
 	
-	// Config config = {
-	//  	{0, 20}, // eps, N
-	//  	{20, 0.5}, // hidden_layer, learning_rate
-	//  	{10, 0.5} // output_layer, learning_rate
-	//  };
-	//  cnn.setNN(config);
+	Config config = {
+	 	{0, 1}, // eps, N
+	 	 // hidden_layer, learning_rate
+	 	{10, 0.5} // output_layer, learning_rate
+	 };
+	 cnn.setNN(config);
 	
 
 	Records flatten_train_data;
@@ -333,6 +331,30 @@ void test_cnn_4() {
 	cout << "Eout = " << Eout << endl;
 }
 
+void test_cnn_5() {
+	// save CNN model
+	Layers config = {
+		{
+			{28, 28, 1}, // map_height, map_width, map_depth
+			{1, 1, 1, 1, 0, 0, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
+		},
+		{
+			{0, 100}, // eps, N
+			{10, 0.5} // output_layer, learning_rate
+		}
+	};
+	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+	CNN cnn(config, labels);
+
+	cnn.print();
+	vector<double> input;
+	for (int i = 0; i < 784; i++) {
+		input.push_back((double)(rand()%256));
+	}
+	cnn.getResult(input);
+}
+
 int main() {
 	try {
 
@@ -350,9 +372,10 @@ int main() {
 		// test_nn_3();
 		// test_nn_4();
 		// test_cnn_1();
-		test_cnn_2();
-		test_cnn_3();
+		// test_cnn_2();
+		// test_cnn_3();
 		// test_cnn_4();
+		test_cnn_5();
 
 	} catch (char const * s) {
 		cout << s << endl;

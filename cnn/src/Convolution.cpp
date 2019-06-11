@@ -51,6 +51,12 @@ Layers Convolution::conv() {
 						}
 					}
 				}
+			}
+		}
+	}
+	for (int k = 0; k < kernels.size(); k++) {
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				if (relu) conv_map[k][i][j] = (conv_map[k][i][j] > 0)? conv_map[k][i][j]: 0;
 			}
 		}
@@ -74,12 +80,17 @@ Layers Convolution::max_pooling() {
 		for (int i = 0; i < conv_map[k].size(); i++)
 			for (int j = 0; j < conv_map[k][i].size(); j++)
 				if (conv_map[k][i][j] < min) min = conv_map[k][i][j];
-	pooling_map.resize(conv_map.size());
-	for (int k = 0; k < pooling_map.size(); k++) {
-		pooling_map[k].resize(height);
+	pooling_map.clear();
+	for (int k = 0; k < conv_map.size(); k++) {
+		vector<vector<double> > layer;
 		for (int i = 0; i < height; i++) {
-			pooling_map[k][i].resize(width, min - 1);
+			vector<double> row;
+			for (int j = 0; j < width; j++) {
+				row.push_back(min - 1);
+			}
+			layer.push_back(row);
 		}
+		pooling_map.push_back(layer);
 	}
 	// max pooling
 	for (int k = 0; k < pooling_map.size(); k++) {
