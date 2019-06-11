@@ -1,5 +1,6 @@
 #include "Kernel.hpp"
 #include <cstdlib>
+#include <math.h>
 
 Kernel::Kernel(int height, int width) {
 	map.resize(height);
@@ -8,7 +9,7 @@ Kernel::Kernel(int height, int width) {
 	}
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
-			map[i][j] = (double) rand() / RAND_MAX;
+			map[i][j] = (double) (2 * 0.08693) * rand() / RAND_MAX - (0.08693);
 		}
 	}
 }

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 using namespace std;
 
 void setup() { // put it once in main function for random (MUST DO !!!)
