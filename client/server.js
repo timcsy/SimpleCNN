@@ -7,7 +7,7 @@ const { createCanvas, loadImage } = require('canvas');
 const sharp = require('sharp');
 const cp = require('child_process');
 
-server.listen(8086);
+server.listen(50088);
 
 server.use(express.static(path.join(__dirname, 'html')));
 server.use(express.static(path.join(__dirname, 'js')));
@@ -72,4 +72,4 @@ server.post('/json', function(req, res) {
     })
 })
 
-console.log('Server listening port 8086');
+console.log('Server listening port 50088');
