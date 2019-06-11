@@ -53,8 +53,8 @@ server.post('/json', function(req, res) {
         .toBuffer().then(function(pixels) {
             //console.log(pixels.toString('hex'));
             var inputStr = pixels.join(' ');
-            //console.log(inputStr);
-            var child = cp.spawn('./bin/test');
+            console.log(inputStr);
+            var child = cp.spawn('./bin/scnn', ['./bin/test_cnn_2.cnn']);
             child.stdin.write(inputStr);
             child.on('exit', function(code) {
                 console.log('exit');
