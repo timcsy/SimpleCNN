@@ -27,13 +27,11 @@
                 </v-card-title>
                 <v-card-actions>
                     <v-dialog v-model="dialog" width="500">
-                        <template v-slot:activator="{on}">
-                            <v-btn dark v-on="on" @click="sendjson">Send </v-btn>
-                        </template>
                         <v-card>
                             <v-card-title>Number is {{number}}</v-card-title>
                         </v-card>
                     </v-dialog>
+                    <v-btn dark @click="sendjson">Send </v-btn>
                     <v-btn flat color="orange" @click="reset">Reset</v-btn>
                 </v-card-actions>
             </v-card>
@@ -49,7 +47,8 @@
             return {
                 //text: "Hello, Vue!"
                 canvas : undefined,
-                number : "0"
+                number : "0",
+                dialog : false
             };
         },
         methods: {
@@ -65,7 +64,7 @@
                     type: 'POST',
                     url: '/json',
                     data: JSON.stringify(this.canvas),
-                    success: function(data) { console.log('data: ' + data.msg); a.number = data.msg},
+                    success: function(data) { console.log('data: ' + data.msg); a.number = data.msg, a.dialog = true},
                     contentType: "application/json",
                     dataType: 'json'
                 });
