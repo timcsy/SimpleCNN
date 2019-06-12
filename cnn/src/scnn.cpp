@@ -12,5 +12,6 @@ int main(int argc, char * argv[]) {
 	double n;
 	while (cin >> n) input.push_back(n);
 	cout << cnn.getResult(input);
+	cout.flush();
 	return 0;
 }

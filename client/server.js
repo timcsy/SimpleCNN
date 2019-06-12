@@ -54,8 +54,10 @@ server.post('/json', function(req, res) {
             //console.log(pixels.toString('hex'));
             var inputStr = pixels.join(' ');
             console.log(inputStr);
+	
             var child = cp.spawn('./bin/scnn', ['./bin/test_cnn_2.cnn']);
-            child.stdin.write(inputStr);
+            //var child = cp.spawn('./bin/test');
+            //child.stdin.write(inputStr);
             child.on('exit', function(code) {
                 console.log('exit');
                 res.send({msg: ret});
@@ -65,10 +67,12 @@ server.post('/json', function(req, res) {
                 ret = data.toString();
                 //res.send(data);
             })
-            
+            child.stdin.on('error', function(error) {console.log(error);}); 
+            child.stdin.write(inputStr);
             child.stdin.end();
+	
         })
-        
+        //res.send({msg: "10"});
     })
 })
 
