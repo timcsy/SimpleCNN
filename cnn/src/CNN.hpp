@@ -10,12 +10,15 @@ public:
 	CNN(Layers config, vector<string> labels);
 	void setConvolution(Config config);
 	void setNN(Config config);
-	vector<double> feed_conv(Layers& input);
-	string getResult(vector<double> input);
-	Records conv(Records& train_data, bool show = false);
-	double train_nn(Records& train_data, bool show = false);
-	double train(Records& train_data, bool show = false);
-	double test_nn(Records& test_data, bool show = false);
+	vector<string> getlabels() { return labels; }
+	vector<double> conv_forward(Layers& input);
+	void conv_backProp(vector<double>& nn_delta);
+	void forward(const vector<double>& input);
+	void backProp(const vector<double>& expect_output);
+	string getResult(const vector<double>& input);
+	double calStandardError();
+	double sample_error(const Records& data, bool show_per_record = false);
+	double train(Records& train_data, bool show = false, bool show_per_record = false, bool show_detail = false);
 	double test(Records& test_data, bool show = false);
 	friend ostream& operator<<(ostream& os, const CNN& cnn);
 	friend istream& operator>>(istream& is, CNN& cnn);

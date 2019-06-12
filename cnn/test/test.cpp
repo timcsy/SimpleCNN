@@ -106,7 +106,7 @@ void test_records() {
 }
 
 void test_neuron_1() {
-	Neuron n_out(10, 0.1);
+	Neuron n_out(10, 0.1, RELU);
 	n_out.print();
 	
 	fstream fout("tmp/test_neuron_1_output.txt", ios::out);
@@ -165,7 +165,7 @@ void test_nn_2() {
 
 void test_nn_3() {
 	vector<int> shape {2, 2, 2};
-	NN nn(shape, 5e-3, 0, 0.5);
+	NN nn(shape, 0, 1e4, 0.5, SIGMOID, MSE);
 
 	Records train_data("test/data/hw4/hw4_train.dat", " ", 2);
 	train_data.setLabel({"1", "-1"});
@@ -181,8 +181,8 @@ void test_nn_3() {
 }
 
 void test_nn_4() {
-	vector<vector<double> > shape {{20}, {5, 0.6}, {2, 0.4}};
-	NN nn(shape, 0, 1000);
+	vector<vector<double> > shape {{20}, {5, 0.6, RELU}, {2, 0.4, SIGMOID}};
+	NN nn(shape, 0, 1000, SCE);
 
 	Records train_data("test/data/nn/tttrain.txt", " ", 20);
 	train_data.setLabel({"1", "-1"});
@@ -198,28 +198,28 @@ void test_nn_4() {
 }
 
 void test_cnn_1() {
+	Layers config = {
+		{
+			{28, 28, 1}, // map_height, map_width, map_depth
+			{32, 3, 3, 2, 0, RELU, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, activation_function, pooling_height, pooling_width
+			{64, 3, 3, 2, 0, RELU, 2, 2}
+		},
+		{
+			{0, 10, SCE}, // eps, N, loss_function
+			{20, 0.5}, // hidden_layer, learning_rate
+			{10, 0.5} // output_layer, learning_rate
+		}
+	};
 	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+	CNN cnn(config, labels);
+
 	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
 	train_data.setLabel(labels);
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
 	test_data.setLabelMap(train_data);
 
-	Layers config = {
-		{
-			{28, 28, 1}, // map_height, map_width, map_depth
-			{7, 4, 4, 1, 0, 1, 4, 4}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
-			{7, 2, 2, 1, 0, 1, 4, 4}
-		},
-		{
-			{0, 100}, // eps, N
-			{20, 0.5}, // hidden_layer, learning_rate
-			{10, 0.5} // output_layer, learning_rate
-		}
-	};
-
-	CNN cnn(config, labels);
-
-	double Ein = cnn.train(train_data, true);
+	double Ein = cnn.train(train_data, true, true, true);
 	double Eout = cnn.test(test_data, true);
 
 	fstream fout("tmp/test_cnn_1.cnn", ios::out);
@@ -232,127 +232,28 @@ void test_cnn_1() {
 }
 
 void test_cnn_2() {
-	// save CNN model
-	Layers config = {
-		{
-			{28, 28, 1}, // map_height, map_width, map_depth
-			{1, 1, 1, 1, 0, 0, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
-		},
-		{
-			{0, 100}, // eps, N
-			{40, 0.5},
-			{20, 0.5}, // hidden_layer, learning_rate
-			{10, 0.5} // output_layer, learning_rate
-		}
-	};
-	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
-	CNN cnn(config, labels);
-
-	fstream fout("tmp/test_cnn_2.cnn", ios::out);
-	fout << cnn;
-	fout.close();
-
-	cnn.print();
-}
-
-void test_cnn_3() {
-	// save convolutioned records
-	fstream fin;
-	fstream fout;
-
+	// using saved CNN model
 	CNN cnn;
-	fin.open("tmp/test_cnn_2.cnn", ios::in);
+	fstream fin("tmp/test_cnn_1.cnn", ios::in);
 	fin >> cnn;
 	fin.close();
 
+	vector<string> labels = cnn.getlabels();
 	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
-	train_data.setLabel({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"});
-
-	fout.open("tmp/test_cnn_3_train.rec", ios::out);
-	fout << cnn.conv(train_data, true);
-	fout.close();
-
+	train_data.setLabel(labels);
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
-	test_data.setLabelMap(train_data);
+	test_data.setLabel(labels);
 
-	fout.open("tmp/test_cnn_3_test.rec", ios::out);
-	fout << cnn.conv(test_data, true);
-	fout.close();
-}
+	double Ein = cnn.train(train_data, true, true, true);
+	double Eout = cnn.test(test_data, true);
 
-
-void test_cnn_4() {
-	// use the saved convolutioned records
-	fstream fin;
-
-	CNN cnn;
-	fin.open("tmp/test_cnn_2.cnn", ios::in);
-	fin >> cnn;
-	fin.close();
-
-	// We can change the NN part only
-	// We can change the NN part only
-	
-	Config config = {
-	 	{0, 1}, // eps, N
-	 	 // hidden_layer, learning_rate
-	 	{10, 0.5} // output_layer, learning_rate
-	 };
-	 cnn.setNN(config);
-	
-
-	Records flatten_train_data;
-	fin.open("tmp/test_cnn_3_train.rec", ios::in);
-	fin >> flatten_train_data;
-	fin.close();
-
-	Records flatten_test_data;
-	fin.open("tmp/test_cnn_3_test.rec", ios::in);
-	fin >> flatten_test_data;
-	fin.close();
-
-	for (int i = 0; i < flatten_train_data.size(); ++i){
-		for(int j = 0; j < flatten_train_data[i].data.size(); ++j){
-			cout << flatten_train_data[i].data[j] << " ";
-		}
-		cout << endl;
-	}
-
-	double Ein = cnn.train_nn(flatten_train_data, true);
-	double Eout = cnn.test_nn(flatten_test_data, true);
-
-	fstream fout("tmp/test_cnn_2.cnn", ios::out);
+	fstream fout("tmp/test_cnn_1.cnn", ios::out);
 	fout << cnn;
 	fout.close();
 
 	cnn.print();
 	cout << "Ein = " << Ein << endl;
 	cout << "Eout = " << Eout << endl;
-}
-
-void test_cnn_5() {
-	// save CNN model
-	Layers config = {
-		{
-			{28, 28, 1}, // map_height, map_width, map_depth
-			{1, 1, 1, 1, 0, 0, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
-		},
-		{
-			{0, 100}, // eps, N
-			{10, 0.5} // output_layer, learning_rate
-		}
-	};
-	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
-	CNN cnn(config, labels);
-
-	cnn.print();
-	vector<double> input;
-	for (int i = 0; i < 784; i++) {
-		input.push_back((double)(rand()%256));
-	}
-	cnn.getResult(input);
 }
 
 int main() {
@@ -371,11 +272,8 @@ int main() {
 		// test_nn_2();
 		// test_nn_3();
 		// test_nn_4();
-		// test_cnn_1();
+		test_cnn_1();
 		// test_cnn_2();
-		// test_cnn_3();
-		// test_cnn_4();
-		test_cnn_5();
 
 	} catch (char const * s) {
 		cout << s << endl;
