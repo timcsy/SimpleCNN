@@ -236,7 +236,7 @@ void test_cnn_2() {
 	Layers config = {
 		{
 			{28, 28, 1}, // map_height, map_width, map_depth
-			{1, 1, 1, 1, 0, 0, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
+			{8, 3, 3, 1, 0, 1, 2, 2}, // kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width
 		},
 		{
 			{0, 100}, // eps, N
@@ -295,7 +295,7 @@ void test_cnn_4() {
 	// We can change the NN part only
 	
 	Config config = {
-	 	{0, 1}, // eps, N
+	 	{0, 10}, // eps, N
 	 	 // hidden_layer, learning_rate
 	 	{10, 0.5} // output_layer, learning_rate
 	 };
@@ -311,14 +311,14 @@ void test_cnn_4() {
 	fin.open("tmp/test_cnn_3_test.rec", ios::in);
 	fin >> flatten_test_data;
 	fin.close();
-
+/*
 	for (int i = 0; i < flatten_train_data.size(); ++i){
 		for(int j = 0; j < flatten_train_data[i].data.size(); ++j){
 			cout << flatten_train_data[i].data[j] << " ";
 		}
 		cout << endl;
 	}
-
+*/
 	double Ein = cnn.train_nn(flatten_train_data, true);
 	double Eout = cnn.test_nn(flatten_test_data, true);
 
@@ -372,10 +372,10 @@ int main() {
 		// test_nn_3();
 		// test_nn_4();
 		// test_cnn_1();
-		// test_cnn_2();
-		// test_cnn_3();
-		// test_cnn_4();
-		test_cnn_5();
+		test_cnn_2();
+		test_cnn_3();
+		test_cnn_4();
+		//test_cnn_5();
 
 	} catch (char const * s) {
 		cout << s << endl;
