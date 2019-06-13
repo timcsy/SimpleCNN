@@ -19,100 +19,151 @@ void CNN::setConvolution(Config config) {
 		int kernel_weight = (config[l].size() > 2)? config[l][2]: 4;
 		int stride = (config[l].size() > 3)? config[l][3]: 1;
 		int padding = (config[l].size() > 4)? config[l][4]: 0;
-		bool relu = (config[l].size() > 5)? config[l][5]: true;
+		int f = (config[l].size() > 5)? config[l][5]: true;
 		int pooling_height = (config[l].size() > 6)? config[l][6]: 2;
 		int pooling_width = (config[l].size() > 7)? config[l][7]: 2;
-		Convolution layer(kernel_num, kernek_height, kernel_weight, stride, padding, relu, pooling_height, pooling_width);
+		double learning_rate = (config[l].size() > 8)? config[l][8]: DEFAULT_LEARNING_RATE;
+		Convolution layer(kernel_num, kernek_height, kernel_weight, stride, padding, f, pooling_height, pooling_width, learning_rate);
 		conv_layers.push_back(layer);
 	}
 }
 
 void CNN::setNN(Config config) {
 	// calculate convolution output number
-	Layers input;
-	for (int l = 0; l < map_depth; l++) {
-		vector<vector<double> > layer;
-		for (int i = 0; i < map_height; i++) {
-			vector<double> row;
-			for (int j = 0; j < map_width; j++) {
-				row.push_back(0);
-			}
-			layer.push_back(row);
-		}
-		input.push_back(layer);
-	}
-	int NN_input_size = feed_conv(input).size();
+	Layers input = init_layers(map_depth, map_height, map_width, 0);
+	int NN_input_size = conv_forward(input).size();
 	// NN
-	double eps = config[0][0];
-	int N = config[0][1];
+	double eps = (config[0].size() > 0)? config[0][0]: 0;
+	int N = (config[0].size() > 1)? config[0][1]: 0;
+	int loss_function = (config[0].size() > 2)? config[0][2]: SIGMOID;
 	config[0] = vector<double>(1, NN_input_size);
-	nn = NN(config, eps, N);
+	nn = NN(config, eps, N, loss_function);
 }
 
-vector<double> CNN::feed_conv(Layers& input) {
+vector<double> CNN::conv_forward(Layers& input) {
 	for (int l = 0; l < conv_layers.size(); l++) {
 		conv_layers[l].feed(input);
 		conv_layers[l].conv();
 		input = conv_layers[l].max_pooling();
+		conv_layers[l].print_pooling();
+		conv_layers[l].print_kernels();
 	}
 	return conv_layers[conv_layers.size()-1].flatten();
 }
 
-Layers reshape(vector<double> v, int height, int width, int depth) {
-	Layers maps;
-	for (int l = 0; l < depth; l++) {
-		vector<vector<double> > layer;
-		for (int i = 0; i < height; i++) {
-			vector<double> row;
-			for (int j = 0; j < width; j++) {
-				row.push_back(v[(l * depth + i) * height + j]);
-			}
-			layer.push_back(row);
-		}
-		maps.push_back(layer);
+void CNN::conv_backProp(vector<double>& nn_delta) {
+	// calculate the delta of last layer of conv
+	conv_layers[conv_layers.size() - 1].calOutputDelta(nn_delta);
+	// calculate hidden layer delta
+	for (int l = conv_layers.size() - 1; l > 0; l--) {
+		conv_layers[l-1].calHiddenDelta(conv_layers[l]);
 	}
-	return maps;
+	// update all weights
+	for (int l = conv_layers.size() - 1; l >= 0; l--) {
+		conv_layers[l].update();
+	}
 }
 
-string CNN::getResult(vector<double> input) {
+void CNN::forward(const vector<double>& input) {
 	Layers data = reshape(input, map_height, map_width, map_depth);
-	vector<double> res = nn.getResult(feed_conv(data));
-	int ans = argmax(res);
+	nn.forward(conv_forward(data));
+}
+
+void CNN::backProp(const vector<double>& expect_output) {
+	vector<double> nn_delta = nn.backProp(expect_output);
+	// cout << "nn_delta" << endl;
+	// for (int i = 0; i < nn_delta.size(); i++) cout << nn_delta[i] << " ";
+	// cout << endl;
+	conv_backProp(nn_delta);
+}
+
+vector<double> CNN::getOutput(const vector<double>& input) {
+	forward(input);
+	return nn.getOutput(nn.size() - 1);
+}
+
+string CNN::getResult(const vector<double>& input) {
+	int ans = argmax(getOutput(input));
 	return labels[ans];
 }
 
-Records CNN::conv(Records& train_data, bool show) {
-	Records flatten_data;
-	flatten_data.setLabelMap(train_data);
-	for (int i = 0; i < train_data.size(); i++) {
-		Record rec;
-		rec.label = train_data[i].label;
-		rec.id = train_data[i].id;
-		rec.output = train_data[i].output;
-		Layers data = reshape(train_data[i].data, map_height, map_width, map_depth);
-		rec.data = feed_conv(data);
-		flatten_data.push_back(rec);
-		if (show) cout << "convolution record num = " << i << endl;
+double CNN::calStandardError() {
+	double error = 0;
+	double count = 0;
+	for (int l = 0; l < nn.size(); ++l) {
+		for (int j = 0; j < nn[l].size(); ++j) {
+			count += nn[l][j].size();
+			error += nn[l][j].calSquareError();
+		}
 	}
-	return flatten_data;
+	for (int l = 0; l < conv_layers.size(); l++) {
+		for (int k = 0; k < conv_layers[l].size(); k++) {
+			count += conv_layers[l][k].getHeight() * conv_layers[l][k].getWidth();
+		}
+		error += conv_layers[l].calSquareError();
+	}
+	return sqrt(error / count);
 }
 
-double CNN::train_nn(Records& flatten_data, bool show) {
-	return nn.train(flatten_data, show);
+double CNN::loss_error(const Records& data, bool show_per_record) {
+	double err_sum = 0;
+	for (int i = 0; i < data.size(); ++i) {
+		vector<double> res = getOutput(data[i].data);
+		err_sum += loss_func(res, data[i].output, nn.getLossFunction());
+		if (show_per_record) {
+			cout << "record" << i << "loss error = " << err_sum / i << endl;
+		}
+	}
+	return err_sum / data.size();
 }
 
-double CNN::train(Records& train_data, bool show) {
-	Records flatten_data = conv(train_data, show);
-	return train_nn(flatten_data, show);
+double CNN::sample_error(const Records& data, bool show_per_record) {
+	double err_num = 0;
+	for (int i = 0; i < data.size(); ++i) {
+		string ans = getResult(data[i].data);
+		if (ans != data[i].label) err_num++;
+		if (show_per_record) {
+			cout << "record " << i << ", ans = " << ans << ", expect = " <<  data[i].label << ", sample error = " << err_num / i << endl;
+		}
+	}
+	return err_num / data.size();
 }
 
-double CNN::test_nn(Records& flatten_data, bool show) {
-	return nn.test(flatten_data);
+double CNN::train(Records& train_data, bool show, bool show_per_record, bool show_detail) {
+	int N = nn.getN();
+	double eps = nn.getEps();
+	int count = 0;
+	int iteration = 0;
+	double loss_err = 0;
+	while (iteration < N || N == 0) {
+		forward(train_data[count].data);
+		backProp(train_data[count].output);
+		if (show_per_record) {
+			double err = loss_func(getOutput(train_data[count].data), train_data[count].output, nn.getLossFunction());
+			if (!show_detail)
+				cout << "iteration = " << iteration << ", record = " << count << ", loss error = " << err << endl;
+			if (show_detail) {
+				double sample_err = sample_error(train_data, show_per_record);
+				cout << "iteration = " << iteration << ", record = " << count << ", loss error = " << err << ", Ein = " << sample_err << endl;
+			}
+		}
+		count++;
+		if (count % train_data.size() == 0) {
+			double loss_err_now = loss_error(train_data, show_per_record);
+			if (0 < loss_err - loss_err_now && loss_err - loss_err_now < eps) break;
+			count %= train_data.size();
+			iteration++;
+			if (show) cout << "iteration = " << iteration << ", delta loss = " << loss_err - loss_err_now << ", Ein = " << sample_error(train_data, show_per_record) << endl;
+			train_data.shuffle();
+			loss_err = loss_err_now;
+		}
+	}
+
+	return sample_error(train_data);
 }
 
 double CNN::test(Records& test_data, bool show) {
-	Records flatten_data = conv(test_data, show);
-	return nn.test(flatten_data);
+	return sample_error(test_data, show);
 }
 
 ostream& operator<<(ostream& os, const CNN& cnn) {

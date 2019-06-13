@@ -55,7 +55,7 @@ server.post('/json', function(req, res) {
             var inputStr = pixels.join(' ');
             console.log(inputStr);
 	
-            var child = cp.spawn('./bin/scnn', ['./bin/test_cnn_2.cnn']);
+            var child = cp.spawn('./bin/scnn', ['./bin/digit_784_20_10.nn']);
             //var child = cp.spawn('./bin/test');
             //child.stdin.write(inputStr);
             child.on('exit', function(code) {

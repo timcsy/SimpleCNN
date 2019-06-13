@@ -33,9 +33,10 @@ public:
 	vector<LabelMap>& read_label(const string filename);
 	vector<LabelMap>& setLabel(vector<string> labels);
 	vector<LabelMap> getLabelMap() const { return label_map; }
-	void setLabelMap(vector<LabelMap>& lm) { label_map = lm; normalize(); }
-	void setLabelMap(Records& recs) { label_map = recs.getLabelMap(); normalize(); }
-	void normalize(); // one-hot encoding
+	void setLabelMap(vector<LabelMap>& lm) { label_map = lm; onehot(); }
+	void setLabelMap(Records& recs) { label_map = recs.getLabelMap(); onehot(); }
+	void normalization(double M, double SD); // normalization
+	void onehot(); // one-hot encoding
 	void shuffle();
 	int size() const { return records.size(); }
 	Record operator[](int i) const;

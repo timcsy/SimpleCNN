@@ -76,7 +76,7 @@ vector<LabelMap>& Records::read_label(const string filename) {
 		label_map.push_back(lm);
 	}
 
-	normalize();
+	onehot();
 	return label_map;
 }
 
@@ -106,11 +106,19 @@ vector<LabelMap>& Records::setLabel(vector<string> labels) {
 		label_map.push_back(lm);
 	}
 
-	normalize();
+	onehot();
 	return label_map;
 }
 
-void Records::normalize() { // one-hot encoding
+void Records::normalization(double M, double SD) {
+	for (int i = 0; i < records.size(); i++) {
+		for (int j = 0; j < records[i].data.size(); j++) {
+			records[i].data[j] = (records[i].data[j] - M) / SD;
+		}
+	}
+}
+
+void Records::onehot() { // one-hot encoding
 	for (int i = 0; i < records.size(); i++) {
 		for (int j = 0; j < label_map.size(); j++) {
 			if (records[i].label == label_map[j].label) {
