@@ -12,7 +12,7 @@ typedef vector<vector<vector<double> > > Layers;
 typedef vector<vector<double> > Config;
 
 enum ActivationFunction {LINEAR = 0, SIGMOID = 1, RELU = 2};
-enum LossFunction {MSE, CE, SCE};
+enum LossFunction {MSE = 0, CE = 1, SCE = 2};
 
 void setup(); // put it once in main function for random (MUST DO !!!)
 double sigmoid(double x);
@@ -21,6 +21,8 @@ double relu(double x);
 double relu_derivative(double x);
 double activation_func(double x, int F = SIGMOID, bool derivative = false);
 string activation_func_name(int F);
+double loss_func(const vector<double>& x, const vector<double>& y, int F);
+double loss_func_partial(double xj, double yj, int F);
 string loss_func_name(int F);
 vector<string> split(const string s, const string delim);
 string& trim(string &s);

@@ -15,8 +15,10 @@ public:
 	void conv_backProp(vector<double>& nn_delta);
 	void forward(const vector<double>& input);
 	void backProp(const vector<double>& expect_output);
+	vector<double> getOutput(const vector<double>& input);
 	string getResult(const vector<double>& input);
 	double calStandardError();
+	double loss_error(const Records& data, bool show_per_record = false);
 	double sample_error(const Records& data, bool show_per_record = false);
 	double train(Records& train_data, bool show = false, bool show_per_record = false, bool show_detail = false);
 	double test(Records& test_data, bool show = false);

@@ -45,6 +45,8 @@ vector<double> CNN::conv_forward(Layers& input) {
 		conv_layers[l].feed(input);
 		conv_layers[l].conv();
 		input = conv_layers[l].max_pooling();
+		conv_layers[l].print_pooling();
+		conv_layers[l].print_kernels();
 	}
 	return conv_layers[conv_layers.size()-1].flatten();
 }
@@ -69,13 +71,18 @@ void CNN::forward(const vector<double>& input) {
 
 void CNN::backProp(const vector<double>& expect_output) {
 	vector<double> nn_delta = nn.backProp(expect_output);
+	// for (int i = 0; i < nn_delta.size(); i++) cout << nn_delta[i] << " ";
+	// cout << endl;
 	conv_backProp(nn_delta);
 }
 
-string CNN::getResult(const vector<double>& input) {
+vector<double> CNN::getOutput(const vector<double>& input) {
 	forward(input);
-	vector<double> res = nn.getOutput(nn.size() - 1);
-	int ans = argmax(res);
+	return nn.getOutput(nn.size() - 1);
+}
+
+string CNN::getResult(const vector<double>& input) {
+	int ans = argmax(getOutput(input));
 	return labels[ans];
 }
 
@@ -97,13 +104,25 @@ double CNN::calStandardError() {
 	return sqrt(error / count);
 }
 
+double CNN::loss_error(const Records& data, bool show_per_record) {
+	double err_sum = 0;
+	for (int i = 0; i < data.size(); ++i) {
+		vector<double> res = getOutput(data[i].data);
+		err_sum += loss_func(res, data[i].output, nn.getLossFunction());
+		if (show_per_record) {
+			cout << "record" << i << "loss error = " << err_sum / i << endl;
+		}
+	}
+	return err_sum / data.size();
+}
+
 double CNN::sample_error(const Records& data, bool show_per_record) {
 	double err_num = 0;
 	for (int i = 0; i < data.size(); ++i) {
 		string ans = getResult(data[i].data);
 		if (ans != data[i].label) err_num++;
 		if (show_per_record) {
-			cout << "ans = " << ans << ", expect = " <<  data[i].label << ", error = " << err_num / i << endl;
+			cout << "record " << i << ", ans = " << ans << ", expect = " <<  data[i].label << ", sample error = " << err_num / i << endl;
 		}
 	}
 	return err_num / data.size();
@@ -114,22 +133,28 @@ double CNN::train(Records& train_data, bool show, bool show_per_record, bool sho
 	double eps = nn.getEps();
 	int count = 0;
 	int iteration = 0;
-	double weight_err;
+	double loss_err = 0;
 	while (iteration < N || N == 0) {
 		forward(train_data[count].data);
 		backProp(train_data[count].output);
-		if (show_per_record && !show_detail)
-			cout << "iteration = " << iteration << ", record = " << count << ", weight error = " << calStandardError() << endl;
-		if (show_per_record && show_detail)
-			cout << "iteration = " << iteration << ", record = " << count << ", weight error = " << calStandardError() << ", Ein = " << sample_error(train_data, show_per_record) << endl;
+		if (show_per_record) {
+			double err = loss_func(getOutput(train_data[count].data), train_data[count].output, nn.getLossFunction());
+			if (!show_detail)
+				cout << "iteration = " << iteration << ", record = " << count << ", loss error = " << err << endl;
+			if (show_detail) {
+				double sample_err = sample_error(train_data, show_per_record);
+				cout << "iteration = " << iteration << ", record = " << count << ", loss error = " << err << ", Ein = " << sample_err << endl;
+			}
+		}
 		count++;
 		if (count % train_data.size() == 0) {
-			weight_err = calStandardError();
-			if (weight_err < eps) break;
+			double loss_err_now = loss_error(train_data, show_per_record);
+			if (0 < loss_err - loss_err_now && loss_err - loss_err_now < eps) break;
 			count %= train_data.size();
 			iteration++;
-			if (show) cout << "iteration = " << iteration << ", weight error = " << weight_err << ", Ein = " << sample_error(train_data, show_per_record) << endl;
+			if (show) cout << "iteration = " << iteration << ", delta loss = " << loss_err - loss_err_now << ", Ein = " << sample_error(train_data, show_per_record) << endl;
 			train_data.shuffle();
+			loss_err = loss_err_now;
 		}
 	}
 

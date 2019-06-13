@@ -75,9 +75,12 @@ vector<double> NN::backProp(const vector<double>& expect_output) {
 	// calculate output layer delta
 	vector<Neuron> &output_layer = w[w.size() - 1];
 	if (expect_output.size() != output_layer.size()) throw "NN expect output size error";
+	// cout << "delta " << w.size() - 1 << " = ";
 	for (int j = 0; j < output_layer.size(); ++j) {
 		output_layer[j].calOutputDelta(expect_output[j]);
+		// cout << output_layer[j].getDelta() << " ";
 	}
+	// cout << endl;
 
 	// calculate hidden layer delta
 	for (int l = w.size() - 1; l > 0; --l) {
@@ -120,6 +123,15 @@ double NN::calStandardError() {
 	return sqrt(error / count);
 }
 
+double NN::loss_error(const Records& data) {
+	double err_sum = 0;
+	for (int i = 0; i < data.size(); ++i) {
+		vector<double> res = getResult(data[i].data);
+		err_sum += loss_func(res, data[i].output, loss_function);
+	}
+	return err_sum / data.size();
+}
+
 double NN::sample_error(const Records& data) {
 	double err_num = 0;
 	for (int i = 0; i < data.size(); ++i) {
@@ -135,18 +147,19 @@ double NN::train(Records train_data, bool show) {
 	// N == 0: just depend on eps
 	int count = 0;
 	int iteration = 0;
-	double weight_err;
+	double loss_err = 0;
 	while (iteration < N || N == 0) {
 		forward(train_data[count].data);
 		backProp(train_data[count].output);
 		count++;
 		if (count % train_data.size() == 0) {
-			weight_err = calStandardError();
-			if (weight_err < eps) break;
+			double loss_err_now = loss_error(train_data);
+			if (0 < loss_err - loss_err_now && loss_err - loss_err_now < eps) break;
 			count %= train_data.size();
 			iteration++;
-			if (show) cout << "iteration = " << iteration << ", weight error = " << weight_err << ", Ein = " << sample_error(train_data) << endl;
+			if (show) cout << "iteration = " << iteration << ", delta loss = " << loss_err - loss_err_now << ", Ein = " << sample_error(train_data) << endl;
 			train_data.shuffle();
+			loss_err = loss_err_now;
 		}
 	}
 

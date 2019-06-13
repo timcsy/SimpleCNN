@@ -52,6 +52,55 @@ string activation_func_name(int F) {
 	}
 }
 
+double loss_func(const vector<double>& x, const vector<double>& y, int F) {
+	double sum;
+	switch (F) {
+		case MSE:
+			if (x.size() != y.size()) throw "Loss function size error";
+			sum = 0;
+			for (int j = 0; j < x.size(); j++) {
+				double d = x[j] - y[j];
+				sum += d * d;
+			}
+			return sum / 2;
+			break;
+		case CE:
+			if (x.size() != y.size()) throw "Loss function size error";
+			sum = 0;
+			for (int j = 0; j < x.size(); j++) {
+				sum += log(1 + exp(- y[j] * x[j]));
+			}
+			return sum;
+			break;
+		case SCE:
+			if (x.size() != y.size()) throw "Loss function size error";
+			sum = 0;
+			for (int j = 0; j < x.size(); j++) {
+				sum += log2(1 + exp(- y[j] * x[j]));
+			}
+			return sum;
+			break;
+		default:
+			return 0;
+	}
+}
+
+double loss_func_partial(double xj, double yj, int F) {
+	switch (F) {
+		case MSE:
+			return xj - yj;
+			break;
+		case CE:
+			return - yj / (1 + exp(yj * xj));
+			break;
+		case SCE:
+			return - yj / (1 + exp(yj * xj)) / log(2);
+			break;
+		default:
+			return 0;
+	}
+}
+
 string loss_func_name(int F) {
 	switch (F) {
 		case MSE: return "Mean-Square Error"; break;

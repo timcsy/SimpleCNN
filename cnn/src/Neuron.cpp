@@ -27,19 +27,7 @@ void Neuron::cal(const vector<double>& input) {
 }
 
 void Neuron::calOutputDelta(const double expected_output, int loss_function) {
-	double LF = 0;
-	switch (loss_function) {
-		case MSE:
-			LF = activation_func(s, f) - expected_output;
-			break;
-		case CE:
-			LF = - expected_output / (1 + exp(expected_output * activation_func(s, f)));
-			break;
-		case SCE:
-			LF = - expected_output / (1 + exp(expected_output * activation_func(s, f))) / log(2);
-			break;
-	}
-	delta = LF * activation_func(s, f, true);
+	delta = loss_func_partial(activation_func(s, f), expected_output, loss_function) * activation_func(s, f, true);
 }
 
 void Neuron::calHiddenDelta(const vector<Neuron>& next, int i) {

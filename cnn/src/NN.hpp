@@ -18,6 +18,7 @@ public:
 	vector<double> getOutput(int l);
 	int getN() const { return N; }
 	double getEps() const { return eps; }
+	int getLossFunction() const { return loss_function; }
 	vector<Neuron>& operator[](int i);
 	vector<Neuron> operator[](int i) const;
 	int size() const { return w.size(); }
@@ -25,6 +26,7 @@ public:
 	vector<double> backProp(const vector<double>& expect_output);
 	vector<double> getResult(const vector<double>& input);
 	double calStandardError();
+	double loss_error(const Records& data);
 	double sample_error(const Records& data);
 	double train(Records train_data, bool show = false);
 	double test(Records test_data);
