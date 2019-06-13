@@ -219,6 +219,32 @@ void test_nn_5() {
 	cout << "Eout = " << Eout << endl;
 }
 
+void test_nn_6() {
+	// train number only use NN
+	vector<vector<double> > config {{784}, {20, 0.5, SIGMOID}, {10, 0.5, SIGMOID}};
+	NN nn(config, 0, 10, SCE);
+
+	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
+	train_data.setLabel(labels);
+	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
+	test_data.setLabel(labels);
+
+	train_data.normalization(0, 255);
+	test_data.normalization(0, 255);
+
+	double Ein = nn.train(train_data, true);
+	double Eout = nn.test(test_data);
+
+	fstream fout("data/digit_784_20_10.nn", ios::out);
+	fout << nn;
+	fout.close();
+
+	nn.print();
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
+}
+
 void test_cnn_1() {
 	Layers config = {
 		{
@@ -301,7 +327,8 @@ int main() {
 		// test_nn_3();
 		// test_nn_4();
 		// test_nn_5();
-		test_cnn_1();
+		test_nn_6();
+		// test_cnn_1();
 		// test_cnn_2();
 
 	} catch (char const * s) {

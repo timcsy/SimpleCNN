@@ -1,9 +1,9 @@
 #include "CNN.hpp"
 
-int main(int argc, char * argv[]) {
+void cnn(char * filepath) {
 	// read cnn
 	CNN cnn;
-	fstream fin(argv[1], ios::in);
+	fstream fin(filepath, ios::in);
 	fin >> cnn;
 	fin.close();
 
@@ -13,5 +13,25 @@ int main(int argc, char * argv[]) {
 	while (cin >> n) input.push_back(n);
 	cout << cnn.getResult(input);
 	cout.flush();
+}
+
+void nn(char * filepath) {
+	// read nn
+	NN nn;
+	fstream fin(filepath, ios::in);
+	fin >> nn;
+	fin.close();
+
+	// predict
+	vector<double> input;
+	double n;
+	while (cin >> n) input.push_back(n);
+	cout << argmax(nn.getResult(input));
+	cout.flush();
+}
+
+int main(int argc, char * argv[]) {
+	// cnn();
+	nn(argv[1]);
 	return 0;
 }

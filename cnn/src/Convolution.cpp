@@ -76,6 +76,7 @@ Layers Convolution::conv() {
 	for (int k = 0; k < KN; k++)
 	for (int a = 0; a < CH; a++)
 	for (int b = 0; b < CW; b++) {
+		s_map[k][a][b] /= KN * KH * KW; // *
 		conv_map[k][a][b] = activation_func(s_map[k][a][b], f);
 	}
 	return conv_map;
@@ -141,6 +142,7 @@ void Convolution::calHiddenDelta(const Convolution& next) {
 	for (int b = 0; b < dp[k][a].size(); b++) {
 		if ( In(i/ph-NS*a+ND, next[k].getHeight()) && In(j/pw-NS*b+ND, next[k].getWidth()) ) {
 			delta[h][i][j] += dp[k][a][b] * next[k][i/ph-NS*a+ND][j/pw-NS*b+ND] * activation_func(s_map[h][i][j], f, true);
+			delta[h][i][j] /= next[k].size() * next[k].getHeight() * next[k].getWidth(); // *
 		}
 	}
 }
@@ -157,7 +159,7 @@ void Convolution::update() {
 			for (int h = 0; h < MN; h++) {
 				total_m += input_map[h][S*a+p-D][S*b+q-D];
 			}
-			total += delta[k][a][b] * total_m;
+			total += delta[k][a][b] * total_m / (KN * KH * KW); // *
 		}
 		kernels[k][p][q] -= learning_rate * total;
 	}
@@ -189,7 +191,7 @@ ostream& operator<<(ostream& os, const Convolution& c) {
 	bs.writeInt(os, c.f);
 	bs.writeInt(os, c.kernels.size());
 	for (int k = 0; k < c.kernels.size(); k++)
-			os << c.kernels[k];
+		os << c.kernels[k];
 	return os;
 }
 

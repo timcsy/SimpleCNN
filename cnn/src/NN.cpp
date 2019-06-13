@@ -84,9 +84,12 @@ vector<double> NN::backProp(const vector<double>& expect_output) {
 
 	// calculate hidden layer delta
 	for (int l = w.size() - 1; l > 0; --l) {
-		for (int j = 0; j < w[l].size(); ++j) {
+		// cout << "delta " << l - 1 << " = ";
+		for (int j = 0; j < w[l-1].size(); ++j) {
 			w[l-1][j].calHiddenDelta(w[l], j);
+			// cout << w[l-1][j].getDelta() << " ";
 		}
+		// cout << endl;
 	}
 
 	// update all weights

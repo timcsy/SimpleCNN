@@ -71,6 +71,7 @@ void CNN::forward(const vector<double>& input) {
 
 void CNN::backProp(const vector<double>& expect_output) {
 	vector<double> nn_delta = nn.backProp(expect_output);
+	// cout << "nn_delta" << endl;
 	// for (int i = 0; i < nn_delta.size(); i++) cout << nn_delta[i] << " ";
 	// cout << endl;
 	conv_backProp(nn_delta);
