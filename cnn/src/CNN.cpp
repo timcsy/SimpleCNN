@@ -56,7 +56,6 @@ void CNN::conv_backProp(vector<double>& nn_delta) {
 	for (int l = conv_layers.size() - 1; l > 0; l--) {
 		conv_layers[l-1].calHiddenDelta(conv_layers[l]);
 	}
-
 	// update all weights
 	for (int l = conv_layers.size() - 1; l >= 0; l--) {
 		conv_layers[l].update();
@@ -117,11 +116,8 @@ double CNN::train(Records& train_data, bool show, bool show_per_record, bool sho
 	int iteration = 0;
 	double weight_err;
 	while (iteration < N || N == 0) {
-		cout << "Hello1" << endl;
 		forward(train_data[count].data);
-		cout << "Hello2" << endl;
 		backProp(train_data[count].output);
-		cout << "Hello3" << endl;
 		if (show_per_record && !show_detail)
 			cout << "iteration = " << iteration << ", record = " << count << ", weight error = " << calStandardError() << endl;
 		if (show_per_record && show_detail)

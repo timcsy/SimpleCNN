@@ -219,7 +219,7 @@ void test_cnn_1() {
 	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
 	test_data.setLabelMap(train_data);
 
-	double Ein = cnn.train(train_data, true, true, true);
+	double Ein = cnn.train(train_data, true, true);
 	double Eout = cnn.test(test_data, true);
 
 	fstream fout("tmp/test_cnn_1.cnn", ios::out);
@@ -267,7 +267,7 @@ int main() {
 		// test_bs_endian();
 		// test_records();
 		// test_neuron_1();
-		// test_neuron_2();
+		// test_neuron｀_2();
 		// test_nn_1();
 		// test_nn_2();
 		// test_nn_3();

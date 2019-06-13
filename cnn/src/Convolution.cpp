@@ -116,6 +116,7 @@ vector<double> Convolution::flatten() {
 void Convolution::calOutputDelta(vector<double>& nn_delta) {
 	init_alias();
 	Layers dp = reshape(nn_delta, PH, PW, KN); // poolinged size delta
+	delta.clear();
 	delta = init_layers(KN, CH, CW, 0); // original size delta of next layer
 	for (int k = 0; k < KN; k++)
 	for (int a = 0; a < CH; a++)
@@ -127,12 +128,6 @@ void Convolution::calOutputDelta(vector<double>& nn_delta) {
 void Convolution::calHiddenDelta(const Convolution& next) {
 	init_alias();
 	Layers dp = next.getDelta(); // poolinged size delta
-	Layers d = init_layers(KN, CH, CW, 0); // original size delta of next layer
-	for (int k = 0; k < KN; k++)
-	for (int a = 0; a < CH; a++)
-	for (int b = 0; b < CW; b++) {
-		d[k][a][b] = dp[k][a/ph][b/pw] / (ph * pw);
-	}
 	// calculate delta
 	int NS = next.getStrides();
 	int ND = next.getPadding();
@@ -141,11 +136,11 @@ void Convolution::calHiddenDelta(const Convolution& next) {
 	for (int h = 0; h < KN; h++)
 	for (int i = 0; i < CH; i++)
 	for (int j = 0; j < CW; j++)
-	for (int k = 0; k < next.size(); k++)
-	for (int a = 0; a < next[k].getHeight(); a++)
-	for (int b = 0; b < next[k].getWidth(); b++) {
-		if ( In(i-NS*a+ND, next[k].getHeight()) && In(j-NS*b+ND, next[k].getWidth()) ) {
-			delta[h][i][j] += d[k][a][b] * next[k][i-NS*a+ND][j-NS*b+ND] * activation_func(s_map[h][i][j], f, true);
+	for (int k = 0; k < dp.size(); k++)
+	for (int a = 0; a < dp[k].size(); a++)
+	for (int b = 0; b < dp[k][a].size(); b++) {
+		if ( In(i/ph-NS*a+ND, next[k].getHeight()) && In(j/pw-NS*b+ND, next[k].getWidth()) ) {
+			delta[h][i][j] += dp[k][a][b] * next[k][i/ph-NS*a+ND][j/pw-NS*b+ND] * activation_func(s_map[h][i][j], f, true);
 		}
 	}
 }
