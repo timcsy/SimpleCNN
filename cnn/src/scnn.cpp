@@ -25,7 +25,10 @@ void nn(char * filepath) {
 	// predict
 	vector<double> input;
 	double n;
-	while (cin >> n) input.push_back(n);
+	for (int i = 0; i < 784; i++) {
+		cin >> n;
+		input.push_back(n);
+	}
 	cout << argmax(nn.getResult(input));
 	cout.flush();
 }
