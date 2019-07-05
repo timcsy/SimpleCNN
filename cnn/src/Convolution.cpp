@@ -10,7 +10,6 @@ Convolution::Convolution(Layers kernels, int strides, int padding, int f, int ph
 		this->kernels.push_back(Kernel(kernels[k]));
 		int kernel_height = kernels[k].size(), kernel_width = 0;
 		if (kernel_height > 0) kernel_width = kernels[k][0].size();
-		delta_kernel_weight.push_back(init_matrix(kernel_height, kernel_width, 0));
 	}
 }
 
@@ -18,7 +17,6 @@ Convolution::Convolution(int kn, int kh, int kw, int strides, int padding, int f
 	strides(strides), padding(padding), f(f), pooling_height(ph), pooling_width(pw), learning_rate(learning_rate) {
 	for (int i = 0; i < kn; i++) {
 		kernels.push_back(Kernel(kh, kw)); // not checking if they are the same
-		delta_kernel_weight.push_back(init_matrix(kh, kw, 0));
 	}
 }
 
@@ -76,7 +74,8 @@ Layers Convolution::conv() {
 	for (int k = 0; k < KN; k++)
 	for (int a = 0; a < CH; a++)
 	for (int b = 0; b < CW; b++) {
-		s_map[k][a][b] /= KN * KH * KW; // *
+		s_map[k][a][b] += kernels[k].getBias();
+		s_map[k][a][b] /= KN * KH * KW + KN; // *
 		conv_map[k][a][b] = activation_func(s_map[k][a][b], f);
 	}
 	return conv_map;
@@ -93,12 +92,18 @@ Layers Convolution::max_pooling() {
 		if (conv_map[k][a][b] < min) min = conv_map[k][a][b];
 	pooling_map.clear();
 	pooling_map = init_layers(conv_map.size(), PH, PW, min - 1);
+	is_max_map.clear();
+	is_max_map = init_layers(conv_map.size(), CH, CW, false);
 	// max pooling
+	int last_k = 0, last_a = 0, last_b = 0;
 	for (int k = 0; k < KN; k++)
 	for (int a = 0; a < CH; a++)
 	for (int b = 0; b < CW; b++) {
-		if (pooling_map[k][a/ph][b/ph] < conv_map[k][a][b])
+		if (pooling_map[k][a/ph][b/ph] < conv_map[k][a][b]) {
+			is_max_map[last_k][last_a][last_b] = false;
+			is_max_map[k][a][b] = true;
 			pooling_map[k][a/ph][b/ph] = conv_map[k][a][b];
+		}
 	}
 	return pooling_map;
 }
@@ -107,9 +112,9 @@ vector<double> Convolution::flatten() {
 	init_alias();
 	output_vector.clear();
 	for (int k = 0; k < KN; k++)
-	for (int u = 0; u < PH; u++)
-	for (int v = 0; v < PW; v++) {
-		output_vector.push_back(pooling_map[k][u][v]);
+	for (int x = 0; x < PH; x++)
+	for (int y = 0; y < PW; y++) {
+		output_vector.push_back(pooling_map[k][x][y]);
 	}
 	return output_vector;
 }
@@ -122,7 +127,9 @@ void Convolution::calOutputDelta(vector<double>& nn_delta) {
 	for (int k = 0; k < KN; k++)
 	for (int a = 0; a < CH; a++)
 	for (int b = 0; b < CW; b++) {
-		delta[k][a][b] = dp[k][a/ph][b/pw] / (ph * pw);
+		if (is_max_map[k][a][b]) {
+			delta[k][a][b] = dp[k][a/ph][b/pw];
+		}
 	}
 }
 
@@ -135,47 +142,47 @@ void Convolution::calHiddenDelta(const Convolution& next) {
 	delta.clear();
 	delta = init_layers(KN, CH, CW, 0);
 	for (int h = 0; h < KN; h++)
-	for (int i = 0; i < CH; i++)
-	for (int j = 0; j < CW; j++)
-	for (int k = 0; k < dp.size(); k++)
-	for (int a = 0; a < dp[k].size(); a++)
-	for (int b = 0; b < dp[k][a].size(); b++) {
-		if ( In(i/ph-NS*a+ND, next[k].getHeight()) && In(j/pw-NS*b+ND, next[k].getWidth()) ) {
-			delta[h][i][j] += dp[k][a][b] * next[k][i/ph-NS*a+ND][j/pw-NS*b+ND] * activation_func(s_map[h][i][j], f, true);
-			delta[h][i][j] /= next[k].size() * next[k].getHeight() * next[k].getWidth(); // *
+	for (int u = 0; u < CH; u++)
+	for (int v = 0; v < CW; v++) {
+		if (is_max_map[h][u][v]) {
+			for (int k = 0; k < dp.size(); k++)
+			for (int a = 0; a < dp[k].size(); a++)
+			for (int b = 0; b < dp[k][a].size(); b++) {
+				if ( In(u/ph-NS*a+ND, next[k].getHeight()) && In(v/pw-NS*b+ND, next[k].getWidth()) ) {
+					delta[h][u][v] += dp[k][a][b] * next[k][u/ph-NS*a+ND][v/pw-NS*b+ND] * activation_func(s_map[h][u][v], f, true);
+					delta[h][u][v] /= next[k].size() * next[k].getHeight() * next[k].getWidth(); // *
+				}
+			}
 		}
 	}
 }
 
 void Convolution::update() {
 	init_alias();
-	for (int k = 0; k < KN; k++)
-	for (int p = 0; p < KH; p++)
-	for (int q = 0; q < KW; q++) {
-		double total = 0;
+	double total = 0;
+	for (int k = 0; k < KN; k++) {
+		// bias
 		for (int a = 0; a < CH; a++)
 		for (int b = 0; b < CW; b++) {
-			double total_m = 0;
-			for (int h = 0; h < MN; h++) {
-				total_m += input_map[h][S*a+p-D][S*b+q-D];
-			}
-			total += delta[k][a][b] * total_m / (KN * KH * KW); // *
+			total += delta[k][a][b];
 		}
-		kernels[k][p][q] -= learning_rate * total;
-	}
-}
+		kernels[k].setBias(kernels[k].getBias() - learning_rate * total / (KN * KH * KW));  // *
 
-double Convolution::calSquareError() {
-	init_alias();
-	double error = 0;
-	for (int k = 0; k < KN; k++)
-	for (int p = 0; p < KH; p++)
-	for (int q = 0; q < KW; q++) {
-		double c = kernels[k][p][q] - delta_kernel_weight[k][p][q];
-		error += c * c;
-		delta_kernel_weight[k][p][q] = kernels[k][p][q];
+		// weights
+		for (int p = 0; p < KH; p++)
+		for (int q = 0; q < KW; q++) {
+			total = 0;
+			for (int a = 0; a < CH; a++)
+			for (int b = 0; b < CW; b++) {
+				double total_m = 0;
+				for (int h = 0; h < MN; h++) {
+					total_m += input_map[h][S*a+p-D][S*b+q-D];
+				}
+				total += delta[k][a][b] * total_m;
+			}
+			kernels[k][p][q] -= learning_rate * total / (KN * KH * KW); // *
+		}
 	}
-	return error;
 }
 
 ostream& operator<<(ostream& os, const Convolution& c) {
@@ -211,7 +218,6 @@ istream& operator>>(istream& is, Convolution& c) {
 		Kernel kernel;
 		is >> kernel;
 		c.kernels.push_back(kernel);
-		c.delta_kernel_weight.push_back(init_matrix(kernel.getHeight(), kernel.getWidth()));
 	}
 	return is;
 }
@@ -263,9 +269,9 @@ void Convolution::print_conv() {
 void Convolution::print_pooling() {
 	init_alias();
 	for (int k = 0; k < KN; k++) {
-		for (int u = 0; u < PH; u++) {
-			for (int v = 0; v < PW; v++) {
-				cout << pooling_map[k][u][v] << " ";
+		for (int x = 0; x < PH; x++) {
+			for (int y = 0; y < PW; y++) {
+				cout << pooling_map[k][x][y] << " ";
 			}
 			cout << endl;
 		}

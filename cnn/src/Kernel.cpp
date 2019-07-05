@@ -11,10 +11,11 @@ Kernel::Kernel(int height, int width) {
 			map[i][j] = (double) 2 * rand() / RAND_MAX - 1;
 		}
 	}
+	bias = (double) 2 * rand() / RAND_MAX - 1;
 }
 
 ostream& operator<<(ostream& os, const Kernel& k) {
-	// { int height, int width, double map[height][width] }
+	// { int height, int width, double map[height][width], double bias }
 	BinaryStream bs;
 	// write obj to stream
 	// alias
@@ -26,6 +27,7 @@ ostream& operator<<(ostream& os, const Kernel& k) {
 		for (int j = 0; j < width; j++) {
 			bs.writeDouble(os, k.map[i][j]);
 		}
+	bs.writeDouble(os, k.bias);
 	return os;
 }
 
@@ -41,6 +43,7 @@ istream& operator>>(istream& is, Kernel& k) {
 			row.push_back(bs.readDouble(is));
 		k.map.push_back(row);
 	}
+	k.bias = bs.readDouble(is);
 	return is;
 }
 
@@ -51,4 +54,5 @@ void Kernel::print() {
 		}
 		cout << endl;
 	}
+	cout << "bias = " << bias << endl;
 }

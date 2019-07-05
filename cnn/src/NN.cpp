@@ -103,8 +103,14 @@ vector<double> NN::backProp(const vector<double>& expect_output) {
 	}
 	
 	vector<double> delta;
-	for (int i = 0; i < w[0].size(); i++) {
-		delta.push_back(w[0][i].getDelta());
+	int input_size = 0;
+	if (w.size() > 0) input_size = (w[0].size() > 0)? w[0][0].size(): 0;
+	for (int i = 0; i < input_size; i++) {
+		double total = 0;
+		for(int j = 0; j < w[0].size(); j++) {
+			total += w[0][j].getDelta() * w[0][j][i];
+		}
+		delta.push_back(total);
 	}
 	return delta;
 }
@@ -112,18 +118,6 @@ vector<double> NN::backProp(const vector<double>& expect_output) {
 vector<double> NN::getResult(const vector<double>& input) {
 	forward(input);
 	return getOutput(w.size() - 1);
-}
-
-double NN::calStandardError() {
-	double error = 0;
-	double count = 0;
-	for (int l = 0; l < w.size(); ++l) {
-		for (int j = 0; j < w[l].size(); ++j) {
-			count += w[l][j].size();
-			error += w[l][j].calSquareError();
-		}
-	}
-	return sqrt(error / count);
 }
 
 double NN::loss_error(const Records& data) {

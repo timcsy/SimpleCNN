@@ -6,6 +6,7 @@
 #include <string>
 using namespace std;
 
+#define MAX_INTERRUPT 2
 #define DEFAULT_LEARNING_RATE 0.5
 
 typedef vector<vector<vector<double> > > Layers;
@@ -15,6 +16,8 @@ enum ActivationFunction {LINEAR = 0, SIGMOID = 1, RELU = 2};
 enum LossFunction {MSE = 0, CE = 1, SCE = 2};
 
 void setup(); // put it once in main function for random (MUST DO !!!)
+int getInterruptTimes();
+void setInterruptTimes(int num);
 double sigmoid(double x);
 double sigmoid_derivative(double x);
 double relu(double x);

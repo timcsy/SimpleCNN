@@ -25,7 +25,6 @@ public:
 	void forward(const vector<double>& input);
 	vector<double> backProp(const vector<double>& expect_output);
 	vector<double> getResult(const vector<double>& input);
-	double calStandardError();
 	double loss_error(const Records& data);
 	double sample_error(const Records& data);
 	double train(Records train_data, bool show = false);

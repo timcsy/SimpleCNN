@@ -4,7 +4,6 @@
 Neuron::Neuron(int input_num, double learning_rate, int f): learning_rate(learning_rate), f(f) {
 	for (int i = 0; i <= input_num; ++i) { // bias as weight[0]
 		weight.push_back((double) 2 * rand() / RAND_MAX - 1);
-		delta_weight.push_back(0);
 	}
 }
 
@@ -45,16 +44,6 @@ void Neuron::update(const vector<double>& input) {
 	}
 }
 
-double Neuron::calSquareError() {
-	double error = 0;
-	for (int i = 0; i < weight.size(); ++i) {
-		double c = weight[i] - delta_weight[i];
-		error += c * c;
-		delta_weight[i] = weight[i];
-	}
-	return error;
-}
-
 ostream& operator<<(ostream& os, const Neuron& n) {
 	// { int size, double learning_rate, int f, double weight[size] }
 	BinaryStream bs;
@@ -77,7 +66,6 @@ istream& operator>>(istream& is, Neuron& n) {
 	n.weight.clear();
 	for (int i = 0; i < size; i++) {
 		n.weight.push_back(bs.readDouble(is));
-		n.delta_weight.push_back(0);
 	}
 	return is;
 }

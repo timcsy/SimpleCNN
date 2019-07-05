@@ -2,10 +2,31 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <csignal>
 using namespace std;
 
-void setup() { // put it once in main function for random (MUST DO !!!)
+int interrupt_times = 0;
+
+void signal_handler(int signal) {
+  interrupt_times++;
+	if (interrupt_times > MAX_INTERRUPT) exit(0);
+}
+
+int getInterruptTimes() {
+  return interrupt_times;
+}
+void setInterruptTimes(int num) {
+	interrupt_times = num;
+}
+
+void init_interrupt() {
+  // Install a signal handler
+  std::signal(SIGINT, signal_handler);
+}
+
+void setup() { // put it once in main function for random and interrupt (MUST DO !!!)
 	srand((unsigned)time(NULL));
+	init_interrupt();
 }
 
 double sigmoid(double x) {

@@ -24,10 +24,9 @@ public:
 	vector<double> flatten();
 	// back propagation
 	Layers getDelta() const { return delta; }
-	void calOutputDelta(vector<double>& nn_delta);
+	void calOutputDelta(vector<double>& nn_delta); // can remove
 	void calHiddenDelta(const Convolution& next);
 	void update();
-	double calSquareError();
 	friend ostream& operator<<(ostream& os, const Convolution& c);
 	friend istream& operator>>(istream& is, Convolution& c);
 	void print();
@@ -46,12 +45,12 @@ private:
 	double learning_rate;
 	// tmp maps
 	Layers input_map;
-	Layers s_map;
-	Layers conv_map;
+	Layers s_map; // the conv result before activate function
+	Layers conv_map;  // the conv result after activate function
 	Layers pooling_map;
+	Layers is_max_map; // store if the position is the max one when pooling
 	vector<double> output_vector;
 	Layers delta;
-	Layers delta_kernel_weight;
 	// alias (init_alias)
 	int MN; // input map size
 	int MH; // input map height

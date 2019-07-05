@@ -32,6 +32,8 @@ private:
 	int map_height;
 	int map_width;
 	int map_depth;
+	int last_iteration = 0;
+	int last_count = 0;
 };
 
 #endif

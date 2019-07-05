@@ -147,7 +147,7 @@ void test_nn_1() {
 	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
 	nn.forward(input);
 	nn.backProp(output);
-	cout << nn.calStandardError() << endl;
+	nn.print();
 }
 
 void test_nn_2() {
@@ -160,7 +160,7 @@ void test_nn_2() {
 	vector<double> input({0.05, 0.1}), output({0.01, 0.99});
 	nn.forward(input);
 	nn.backProp(output);
-	cout << nn.calStandardError() << endl;
+	nn.print();
 }
 
 void test_nn_3() {
@@ -270,7 +270,9 @@ void test_cnn_1() {
 	train_data.normalization(0, 255);
 	test_data.normalization(0, 255);
 
+	cout << "training..." << endl;
 	double Ein = cnn.train(train_data, true, true);
+	cout << "testing..." << endl;
 	double Eout = cnn.test(test_data, true);
 
 	fstream fout("tmp/test_cnn_1.cnn", ios::out);
@@ -298,7 +300,9 @@ void test_cnn_2() {
 	train_data.normalization(0, 255);
 	test_data.normalization(0, 255);
 
-	double Ein = cnn.train(train_data, true, true, true);
+	cout << "training..." << endl;
+	double Ein = cnn.train(train_data, true, true);
+	cout << "testing..." << endl;
 	double Eout = cnn.test(test_data, true);
 
 	fstream fout("tmp/test_cnn_1.cnn", ios::out);
@@ -327,9 +331,9 @@ int main() {
 		// test_nn_3();
 		// test_nn_4();
 		// test_nn_5();
-		test_nn_6();
+		// test_nn_6();
 		// test_cnn_1();
-		// test_cnn_2();
+		test_cnn_2();
 
 	} catch (char const * s) {
 		cout << s << endl;

@@ -45,8 +45,8 @@ vector<double> CNN::conv_forward(Layers& input) {
 		conv_layers[l].feed(input);
 		conv_layers[l].conv();
 		input = conv_layers[l].max_pooling();
-		conv_layers[l].print_pooling();
-		conv_layers[l].print_kernels();
+		// conv_layers[l].print_pooling();
+		// conv_layers[l].print_kernels();
 	}
 	return conv_layers[conv_layers.size()-1].flatten();
 }
@@ -87,24 +87,6 @@ string CNN::getResult(const vector<double>& input) {
 	return labels[ans];
 }
 
-double CNN::calStandardError() {
-	double error = 0;
-	double count = 0;
-	for (int l = 0; l < nn.size(); ++l) {
-		for (int j = 0; j < nn[l].size(); ++j) {
-			count += nn[l][j].size();
-			error += nn[l][j].calSquareError();
-		}
-	}
-	for (int l = 0; l < conv_layers.size(); l++) {
-		for (int k = 0; k < conv_layers[l].size(); k++) {
-			count += conv_layers[l][k].getHeight() * conv_layers[l][k].getWidth();
-		}
-		error += conv_layers[l].calSquareError();
-	}
-	return sqrt(error / count);
-}
-
 double CNN::loss_error(const Records& data, bool show_per_record) {
 	double err_sum = 0;
 	for (int i = 0; i < data.size(); ++i) {
@@ -123,8 +105,9 @@ double CNN::sample_error(const Records& data, bool show_per_record) {
 		string ans = getResult(data[i].data);
 		if (ans != data[i].label) err_num++;
 		if (show_per_record) {
-			cout << "record " << i << ", ans = " << ans << ", expect = " <<  data[i].label << ", sample error = " << err_num / i << endl;
+			cout << "record " << i << ", ans = " << ans << ", expect = " <<  data[i].label << ", sample error = " << err_num / (i + 1) << endl;
 		}
+		if (getInterruptTimes() >= 2) return err_num / (i + 1);
 	}
 	return err_num / data.size();
 }
@@ -132,8 +115,8 @@ double CNN::sample_error(const Records& data, bool show_per_record) {
 double CNN::train(Records& train_data, bool show, bool show_per_record, bool show_detail) {
 	int N = nn.getN();
 	double eps = nn.getEps();
-	int count = 0;
-	int iteration = 0;
+	int iteration = last_iteration;
+	int count = last_count;
 	double loss_err = 0;
 	while (iteration < N || N == 0) {
 		forward(train_data[count].data);
@@ -157,6 +140,11 @@ double CNN::train(Records& train_data, bool show, bool show_per_record, bool sho
 			train_data.shuffle();
 			loss_err = loss_err_now;
 		}
+		if (getInterruptTimes() >= 1) {
+			last_iteration = iteration;
+			last_count = count;
+			break;
+		}
 	}
 
 	return sample_error(train_data);
@@ -167,12 +155,14 @@ double CNN::test(Records& test_data, bool show) {
 }
 
 ostream& operator<<(ostream& os, const CNN& cnn) {
-	// { int map_height, int map_width, int map_depth, int layer_size, Convolution[layer_size], nn }
+	// { int map_height, int map_width, int map_depth, int last_iteration, int last_count, int layer_size, Convolution[layer_size], nn, int label_num, string labels }
 	BinaryStream bs;
 	// write obj to stream
 	bs.writeInt(os, cnn.map_height);
 	bs.writeInt(os, cnn.map_width);
 	bs.writeInt(os, cnn.map_depth);
+	bs.writeInt(os, cnn.last_iteration);
+	bs.writeInt(os, cnn.last_count);
 	bs.writeInt(os, cnn.conv_layers.size());
 	for (int l = 0; l < cnn.conv_layers.size(); l++) {
 		os << cnn.conv_layers[l];
@@ -186,12 +176,14 @@ ostream& operator<<(ostream& os, const CNN& cnn) {
 }
 
 istream& operator>>(istream& is, CNN& cnn) {
-	// { int map_height, int map_width, int map_depth, int layer_size, Convolution[layer_size], nn, int label_num, string labels }
+	// { int map_height, int map_width, int map_depth, int last_iteration, int last_count, int layer_size, Convolution[layer_size], nn, int label_num, string labels }
 	BinaryStream bs;
 	// read obj from stream
 	cnn.map_height = bs.readInt(is);
 	cnn.map_width = bs.readInt(is);
 	cnn.map_depth = bs.readInt(is);
+	cnn.last_iteration = bs.readInt(is);
+	cnn.last_count = bs.readInt(is);
 	int layer_size = bs.readInt(is);
 	for (int l = 0; l < layer_size; l++) {
 		Convolution c;
