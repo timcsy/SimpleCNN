@@ -314,6 +314,75 @@ void test_cnn_2() {
 	cout << "Eout = " << Eout << endl;
 }
 
+void test_cnn_3() {
+	Layers config = {
+		{
+			{28, 28, 1}, // map_height, map_width, map_depth
+			{6, 3, 3, 2, 0, RELU, 2, 2, 0.5}, // kernel_num, kernek_height, kernel_weight, stride, padding, activation_function, pooling_height, pooling_width, learning rate
+			{16, 3, 3, 1, 0, RELU, 2, 2, 0.5}
+		},
+		{
+			{0, 10, SCE}, // eps, N, loss_function
+			{84, 0.5, RELU}, // hidden_layer, learning_rate, activation_function
+			{10, 0.5, SIGMOID} // output_layer, learning_rate, activation_function
+		}
+	};
+	vector<string> labels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+	CNN cnn(config, labels);
+
+	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
+	train_data.setLabel(labels);
+	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
+	test_data.setLabelMap(train_data);
+
+	train_data.normalization(0, 255);
+	test_data.normalization(0, 255);
+
+	cout << "training..." << endl;
+	double Ein = cnn.train(train_data, true, true);
+	cout << "testing..." << endl;
+	double Eout = cnn.test(test_data, true);
+
+	fstream fout("tmp/test_cnn_3.cnn", ios::out);
+	fout << cnn;
+	fout.close();
+
+	cnn.print();
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
+}
+
+void test_cnn_4() {
+	// using saved CNN model
+	CNN cnn;
+	fstream fin("tmp/test_cnn_3.cnn", ios::in);
+	fin >> cnn;
+	fin.close();
+
+	vector<string> labels = cnn.getlabels();
+	Records train_data("test/data/digit-recognizer/train.csv", ",", "label");
+	train_data.setLabel(labels);
+	Records test_data("test/data/digit-recognizer/test.csv", ",", "label");
+	test_data.setLabel(labels);
+
+	train_data.normalization(0, 255);
+	test_data.normalization(0, 255);
+
+	cout << "training..." << endl;
+	double Ein = cnn.train(train_data, true, true);
+	cout << "testing..." << endl;
+	double Eout = cnn.test(test_data, true);
+
+	fstream fout("tmp/test_cnn_3.cnn", ios::out);
+	fout << cnn;
+	fout.close();
+
+	cnn.print();
+	cout << "Ein = " << Ein << endl;
+	cout << "Eout = " << Eout << endl;
+}
+
 int main() {
 	try {
 
@@ -325,15 +394,17 @@ int main() {
 		// test_bs_endian();
 		// test_records();
 		// test_neuron_1();
-		// test_neuron｀_2();
+		// test_neuron_2();
 		// test_nn_1();
 		// test_nn_2();
 		// test_nn_3();
 		// test_nn_4();
 		// test_nn_5();
-		// test_nn_6();
+		test_nn_6();
 		// test_cnn_1();
-		test_cnn_2();
+		// test_cnn_2();
+		// test_cnn_3();
+		// test_cnn_4();
 
 	} catch (char const * s) {
 		cout << s << endl;
