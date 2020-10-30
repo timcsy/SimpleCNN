@@ -49,7 +49,7 @@ server.post('/json', function(req, res) {
         var data = matches[2];
         var buffer = Buffer.from(data, 'base64');
         var ret;
-        sharp(buffer).resize(28,28).grayscale().raw({ resolveWithObject: true })
+        sharp(buffer).resize(28,28).grayscale().normalize().blur().raw({ resolveWithObject: true })
         .toBuffer().then(function(pixels) {
             //console.log(pixels.toString('hex'));
             var inputStr = pixels.join(' ');
